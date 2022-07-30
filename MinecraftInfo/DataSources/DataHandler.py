@@ -4,7 +4,14 @@ from MinecraftInfo.Util.FileOpener import LoadJsonFile
 
 
 class DataHandler:
+    """Manage the data sources."""
+
     def __init__(self, dataSourceLocationsFile: str) -> None:
+        """Class constructor. Set the minecraft chat location and guilds to monitor.
+
+        Args:
+            dataSourceLocationsFile (str): The configuration file of the discord guilds and minecraft chat log to monitor.
+        """
         self.DataSourceLocations = LoadJsonFile(dataSourceLocationsFile)
         self.OfficialChatChannelHandler = DiscordMessages(
             self.DataSourceLocations["Discord"]["Guilds"]["OfficialChat"]
@@ -18,6 +25,11 @@ class DataHandler:
             )
 
     def GetData(self) -> list[list, list]:
+        """Return the last messages from the minecraft chat log and monitored guilds.
+
+        Returns:
+            list[list, list]: The last messages from the monitored sources.
+        """
         Data = [[], []]
         print(self.OfficialChatChannelHandler)
         print(self.OfficialChatChannelHandler.RetrieveMessageList())

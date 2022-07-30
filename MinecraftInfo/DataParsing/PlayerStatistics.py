@@ -1,2 +1,7 @@
-def PlayerStatistics(DiscordData: list) -> None:
+def PlayerStatistics(minecraftChatLog: list) -> None:
+    """Given discord chat data update the player statistics.
+
+    Args:
+        minecraftChatLog (list): Minecraft chat log.
+    """
     pass

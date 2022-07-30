@@ -16,7 +16,7 @@ class Main:
         self.DiscordData = self.DataSourceHandler.GetData()
 
     def UpdatePlayerStatistics(self) -> None:
-        PlayerStatistics(self.DiscordData)
+        PlayerStatistics(self.DiscordData[0])
 
     def UpdateItemStatistics(self) -> None:
         ItemStatistics(self.DiscordData)
