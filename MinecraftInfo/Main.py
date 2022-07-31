@@ -16,7 +16,7 @@ class Main:
         self.DiscordData = self.DataSourceHandler.GetData()
 
     def UpdatePlayerStatistics(self) -> None:
-        PlayerStatistics(self.DiscordData[0])
+        PlayerStatistics(self.DiscordData[0][0])
 
     def UpdateItemStatistics(self) -> None:
         ItemStatistics(self.DiscordData)
@@ -26,3 +26,5 @@ if __name__ == "__main__":
     MainProgram = Main(
         r"C:\Users\alexa\Desktop\Minecraft\MinecraftInfo\MinecraftInfo\Configuration\DataSourceLocations.json"
     )
+    MainProgram.UpdateDiscordData()
+    MainProgram.UpdatePlayerStatistics()

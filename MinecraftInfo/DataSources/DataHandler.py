@@ -1,5 +1,5 @@
-from MinecraftInfo.DataSources import DiscordMessages
-from MinecraftInfo.DataSources import DiscordGuildHandler
+from MinecraftInfo.DataSources.DiscordMessages import DiscordMessages
+from MinecraftInfo.DataSources.DiscordGuildHandler import DiscordGuildHandler
 from MinecraftInfo.Util.FileOpener import LoadJsonFile
 
 
@@ -31,8 +31,6 @@ class DataHandler:
             list[list, list]: The last messages from the monitored sources.
         """
         Data = [[], []]
-        print(self.OfficialChatChannelHandler)
-        print(self.OfficialChatChannelHandler.RetrieveMessageList())
         Data[0].append(self.OfficialChatChannelHandler.RetrieveMessageList())
         for Guild in self.MonitoredGuilds:
             Data[1].append(Guild.GetGuildChatLogs())

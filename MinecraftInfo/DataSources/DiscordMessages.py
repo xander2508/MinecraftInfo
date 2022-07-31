@@ -1,5 +1,6 @@
 import requests
 import json
+import MinecraftInfo.DataSources.AuthToken as AuthToken
 
 
 class DiscordMessages:
@@ -28,6 +29,7 @@ class DiscordMessages:
                     + "#"
                     + Message["author"]["discriminator"],
                     Message["content"],
+                    Message["embeds"],
                 )
             )
         return DiscordMessagesList
@@ -42,18 +44,11 @@ def RequestDiscordMessages(channelID: int, Authorization: str) -> json:
     Returns:
         json: The chat logs from discord channel.
     """
-    Header = {
-        "Authorization": "MTAwMjI1NzY2ODkyMjE1OTE1Nw.GtE3uY.YTuJQv-CPIO7cjOCXh_hxpZRp-dpRwPv721XAY"
-    }
+    Header = {"Authorization": AuthToken.AUTH_TOKEN}
     Response = requests.get(
         url="https://discord.com/api/v9/channels/"
         + str(channelID)
-        + "/messages?limit=50",
+        + "/messages?limit=100",
         headers=Header,
     )
     return json.loads(Response.text)
-
-
-if __name__ == "__main__":
-    a = DiscordMessages(916798277746298883)
-    print(a.RetrieveMessageList())
