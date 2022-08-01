@@ -41,7 +41,7 @@ def test_DiscordMessage_ReturnsCorrectUsername(mocker):
         return_value=MockJson,
     )
     a = MinecraftInfo.DataSources.DiscordMessages.DiscordMessages(916798277746298883)
-    assert "UsernameTest" in a.RetrieveMessageList()[0][0]
+    assert "UsernameTest" in a.RetrieveMessageList()[0]["author"]["username"]
 
 
 def test_DiscordMessage_ReturnsCorrectMessage(mocker):
@@ -63,7 +63,7 @@ def test_DiscordMessage_ReturnsCorrectMessage(mocker):
         return_value=MockJson,
     )
     a = MinecraftInfo.DataSources.DiscordMessages.DiscordMessages(916798277746298883)
-    assert "ContentTest" in a.RetrieveMessageList()[0][1]
+    assert "ContentTest" in a.RetrieveMessageList()[0]["content"]
 
 
 def test_DiscordMessage_ReturnsTwoMessages(mocker):

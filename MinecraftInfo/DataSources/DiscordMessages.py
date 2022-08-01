@@ -23,15 +23,7 @@ class DiscordMessages:
         DiscordJsonMessages = RequestDiscordMessages(self.__ChannelID, "")
         DiscordMessagesList = []
         for Message in DiscordJsonMessages:
-            DiscordMessagesList.append(
-                (
-                    Message["author"]["username"]
-                    + "#"
-                    + Message["author"]["discriminator"],
-                    Message["content"],
-                    Message["embeds"],
-                )
-            )
+            DiscordMessagesList.append(Message)
         return DiscordMessagesList
 
 
@@ -45,10 +37,14 @@ def RequestDiscordMessages(channelID: int, Authorization: str) -> json:
         json: The chat logs from discord channel.
     """
     Header = {"Authorization": AuthToken.AUTH_TOKEN}
-    Response = requests.get(
-        url="https://discord.com/api/v9/channels/"
-        + str(channelID)
-        + "/messages?limit=100",
-        headers=Header,
-    )
+    try:
+        Response = requests.get(
+            url="https://discord.com/api/v9/channels/"
+            + str(channelID)
+            + "/messages?limit=100",
+            headers=Header,
+        )
+    except:
+        print("Error")  # LOG
+        return json.loads(json.dumps([]))
     return json.loads(Response.text)

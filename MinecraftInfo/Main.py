@@ -9,14 +9,15 @@ from MinecraftInfo.DataParsing.ItemStatistics import ItemStatistics
 
 class Main:
     def __init__(self, dataSourceLocationsFile: str) -> None:
-        self.DataSourceHandler = DataHandler(dataSourceLocationsFile)
+        self.ConfiguarationFileLocation = dataSourceLocationsFile
+        self.DataSourceHandler = DataHandler(self.ConfiguarationFileLocation)
         self.DiscordData = []
 
     def UpdateDiscordData(self) -> None:
         self.DiscordData = self.DataSourceHandler.GetData()
 
     def UpdatePlayerStatistics(self) -> None:
-        PlayerStatistics(self.DiscordData[0][0])
+        PlayerStatistics(self.DiscordData[0], self.ConfiguarationFileLocation)
 
     def UpdateItemStatistics(self) -> None:
         ItemStatistics(self.DiscordData)

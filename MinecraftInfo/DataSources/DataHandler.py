@@ -30,8 +30,8 @@ class DataHandler:
         Returns:
             list[list, list]: The last messages from the monitored sources.
         """
-        Data = [[], []]
-        Data[0].append(self.OfficialChatChannelHandler.RetrieveMessageList())
+        Data = []
+        Data.append(self.OfficialChatChannelHandler.RetrieveMessageList())
         for Guild in self.MonitoredGuilds:
-            Data[1].append(Guild.GetGuildChatLogs())
+            Data.append(Guild.GetGuildChatLogs())
         return Data
