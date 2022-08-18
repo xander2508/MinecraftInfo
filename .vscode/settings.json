@@ -5,5 +5,15 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.analysis.extraPaths": [
-    ]
+    ],
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "a",
+            "group": "a",
+            "database": "${workspaceFolder:MinecraftInfo}/MinecraftInfo/Configuration/DataStorage.SQLITE3"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
 }

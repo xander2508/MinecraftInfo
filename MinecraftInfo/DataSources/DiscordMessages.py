@@ -1,3 +1,4 @@
+from logging import exception
 import requests
 import json
 import MinecraftInfo.DataSources.AuthToken as AuthToken
@@ -21,9 +22,23 @@ class DiscordMessages:
             _type_: _description_
         """
         DiscordJsonMessages = RequestDiscordMessages(self.__ChannelID, "")
-        DiscordMessagesList = []
+        DiscordMessagesList = {"Message": {}, "Embeds": {"Death": {}, "Other": {}}}
         for Message in DiscordJsonMessages:
-            DiscordMessagesList.append(Message)
+            if Message["embeds"] == []:
+                DiscordMessagesList["Message"][Message["id"]] = Message["content"]
+            else:
+                if (
+                    "title" in Message["embeds"][0]
+                    and Message["embeds"][0]["title"] == "Death Message"
+                ):
+                    DiscordMessagesList["Embeds"]["Death"][Message["id"]] = Message[
+                        "embeds"
+                    ][0]["author"]["name"]
+
+                else:
+                    DiscordMessagesList["Embeds"]["Other"][Message["id"]] = Message[
+                        "embeds"
+                    ][0]["author"]["name"]
         return DiscordMessagesList
 
 
@@ -44,7 +59,7 @@ def RequestDiscordMessages(channelID: int, Authorization: str) -> json:
             + "/messages?limit=100",
             headers=Header,
         )
-    except:
-        print("Error")  # LOG
-        return json.loads(json.dumps([]))
+    except exception as e:
+        print("Error", e)  # LOG
+        return json.loads(json.dumps({"players": {}}))
     return json.loads(Response.text)
