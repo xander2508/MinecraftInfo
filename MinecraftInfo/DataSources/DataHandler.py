@@ -1,21 +1,26 @@
 from MinecraftInfo.DataSources.DiscordMessages import DiscordMessages
 from MinecraftInfo.DataSources.DiscordGuildHandler import DiscordGuildHandler
-from MinecraftInfo.Util.FileOpener import LoadJsonFile
+from MinecraftInfo.DataStorage.JsonQueries import (
+    GetFullJson,
+    GetOfficialChatChannelHandler,
+)
 
 
 class DataHandler:
     """Manage the data sources."""
 
-    def __init__(self, dataSourceLocationsFile: str) -> None:
+    def __init__(self, messagesValidated) -> None:
         """Class constructor. Set the minecraft chat location and guilds to monitor.
 
         Args:
             dataSourceLocationsFile (str): The configuration file of the discord guilds and minecraft chat log to monitor.
         """
-        self.DataSourceLocations = LoadJsonFile(dataSourceLocationsFile)
+        self.MessagesValidated = messagesValidated
         self.OfficialChatChannelHandler = DiscordMessages(
-            self.DataSourceLocations["Discord"]["Guilds"]["OfficialChat"]
+            GetOfficialChatChannelHandler()
         )
+
+        self.DataSourceLocations = GetFullJson()
         self.MonitoredGuilds = []
         for Guild in self.DataSourceLocations["Discord"]["Guilds"]["Marketplaces"]:
             self.MonitoredGuilds.append(
@@ -31,7 +36,9 @@ class DataHandler:
             list[list, list]: The last messages from the monitored sources.
         """
         Data = []
-        Data.append(self.OfficialChatChannelHandler.RetrieveMessageList())
+        Data.append(
+            self.OfficialChatChannelHandler.RetrieveMessageList(self.MessagesValidated)
+        )
         for Guild in self.MonitoredGuilds:
             Data.append(Guild.GetGuildChatLogs())
         return Data
