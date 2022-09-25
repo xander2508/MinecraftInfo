@@ -106,6 +106,4 @@ def UpdatePlayersOnlineFromMap():
         AddUser(player["account"])
         AddNickname(player["account"], player["name"])
         UpdateUserOnline(player["account"], True)
-        UpdateUserLastOnline(
-            player["account"], int(datetime.now(timezone.utc).timestamp() * 1000)
-        )
+        UpdateUserLastOnline(player["account"], datetime.now(timezone.utc))

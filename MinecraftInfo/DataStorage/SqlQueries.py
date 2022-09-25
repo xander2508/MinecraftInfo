@@ -191,7 +191,7 @@ def GetNicknameLinks():
         return NicknameLinksDict
 
 
-def UpdateUserLastOnline(user: str, timestamp: datetime):
+def UpdateUserLastOnline(user: str, timestamp: int):
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
         with closing(sqliteConnection.cursor()) as cursor:
@@ -493,6 +493,35 @@ def AddAchievementLink(username: str, achievement: str):
                 ),
             )
             sqliteConnection.commit()
+    except sqlite3.Error as error:
+        print("Log", error)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+
+
+def UpdateUserMessageCount(user: str, messageCount: int):
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            MessagesSentSQL = cursor.execute(
+                "SELECT MessagesSent FROM Users WHERE Name = (?) LIMIT 1",
+                (user,),
+            )
+            MessagesSent = 0
+            for i in MessagesSentSQL:
+                MessagesSent = int(i[0])
+            MessagesSent += messageCount
+            cursor.execute(
+                "UPDATE Users SET MessagesSent = (?) WHERE Name = (?)",
+                (
+                    messageCount,
+                    user,
+                ),
+            )
+            sqliteConnection.commit()
+
     except sqlite3.Error as error:
         print("Log", error)
     finally:

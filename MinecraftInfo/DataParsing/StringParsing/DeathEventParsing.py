@@ -23,7 +23,7 @@ def UpdatePlayerDeaths(playerDeathMessages: json, messagesValidated):
                 DeathTypeMatch,
                 FinalDeathString,
                 int(DeathMessageIndex),
-                int(playerDeathMessages[DeathMessageIndex][1]),
+                playerDeathMessages[DeathMessageIndex][1],
             )
         messagesValidated.MessageReviewed(DeathMessageIndex)
 

@@ -12,9 +12,9 @@ def GetOfficialChatChannelHandler():
     return LoadJsonFile(JSON_LOCATION)["Discord"]["Guilds"]["OfficialChat"]
 
 
+def GetMarketplacesHandler():
+    return LoadJsonFile(JSON_LOCATION)["Discord"]["Guilds"]["Marketplaces"]
+
+
 def GetFullJson():
     return LoadJsonFile(JSON_LOCATION)
-
-
-def LogUnknownDeathMessage(deathMessage: str):
-    pass

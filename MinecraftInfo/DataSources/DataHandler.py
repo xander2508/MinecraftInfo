@@ -1,7 +1,7 @@
 from MinecraftInfo.DataSources.DiscordMessages import DiscordMessages
 from MinecraftInfo.DataSources.DiscordGuildHandler import DiscordGuildHandler
 from MinecraftInfo.DataStorage.JsonQueries import (
-    GetFullJson,
+    GetMarketplacesHandler,
     GetOfficialChatChannelHandler,
 )
 
@@ -20,13 +20,11 @@ class DataHandler:
             GetOfficialChatChannelHandler()
         )
 
-        self.DataSourceLocations = GetFullJson()
+        self.DataSourceLocations = GetMarketplacesHandler()
         self.MonitoredGuilds = []
-        for Guild in self.DataSourceLocations["Discord"]["Guilds"]["Marketplaces"]:
+        for Guild in self.DataSourceLocations:
             self.MonitoredGuilds.append(
-                DiscordGuildHandler(
-                    self.DataSourceLocations["Discord"]["Guilds"]["Marketplaces"][Guild]
-                )
+                DiscordGuildHandler(self.DataSourceLocations[Guild])
             )
 
     def GetData(self) -> list[list, list]:
