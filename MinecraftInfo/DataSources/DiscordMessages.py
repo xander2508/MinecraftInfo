@@ -47,7 +47,7 @@ class DiscordMessages:
                                 DiscordMessagesList["Embeds"]["Death"][
                                     Message["id"]
                                 ] = [
-                                    Message["embeds"][0]["author"]["name"],
+                                    Message["embeds"][0]["author"]["name"].strip("\\"),
                                     Message["timestamp"],
                                 ]
                             elif "name" in Message["embeds"][0]["author"] and (
@@ -56,7 +56,7 @@ class DiscordMessages:
                             ):
                                 DiscordMessagesList["Embeds"]["Achievement"][
                                     Message["id"]
-                                ] = Message["embeds"][0]["author"]["name"]
+                                ] = Message["embeds"][0]["author"]["name"].strip("\\")
                             elif "name" in Message["embeds"][0]["author"] and (
                                 "joined" in Message["embeds"][0]["author"]["name"]
                                 or "left" in Message["embeds"][0]["author"]["name"]
@@ -64,13 +64,13 @@ class DiscordMessages:
                                 DiscordMessagesList["Embeds"]["Connection"][
                                     Message["id"]
                                 ] = [
-                                    Message["embeds"][0]["author"]["name"],
+                                    Message["embeds"][0]["author"]["name"].strip("\\"),
                                     Message["timestamp"],
                                 ]
                             else:
                                 DiscordMessagesList["Embeds"]["Other"][
                                     Message["id"]
-                                ] = Message["embeds"][0]["author"]["name"]
+                                ] = Message["embeds"][0]["author"]["name"].strip("\\")
                                 LogUnknownEvent("Unknown Message Type " + str(Message))
                     except Exception as Error:
                         LogUnknownEvent(

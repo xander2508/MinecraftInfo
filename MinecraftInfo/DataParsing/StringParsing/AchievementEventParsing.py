@@ -10,9 +10,14 @@ from MinecraftInfo.DataStorage.SqlQueries import (
 from MinecraftInfo.DataParsing.StringParsing.NameParsing import NameParsing
 
 
-def UpdatePlayerAchievement(AchievementMessages: json, messagesValidated):
-    for AchievementMessageIndex in AchievementMessages:
-        AchievementMessage = AchievementMessages[AchievementMessageIndex][0]
+def UpdatePlayerAchievement(achievementMessages: json, messagesValidated):
+    """Provided list of player achievements, extract relevant info from the message and log it.
+    Args:
+        achievementMessages (json): Player achievement messages {ID:[Achievement message,Time]}.
+        messagesValidated (_type_): Object to track the messages already reviewed.
+    """
+    for AchievementMessageIndex in achievementMessages:
+        AchievementMessage = achievementMessages[AchievementMessageIndex][0]
         FinalAchievementMessage, AchievementEventMatch = GetAchievementEvent(
             AchievementMessage
         )

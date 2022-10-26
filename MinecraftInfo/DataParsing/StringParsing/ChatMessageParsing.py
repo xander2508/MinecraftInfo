@@ -6,6 +6,12 @@ from MinecraftInfo.DataStorage.SqlQueries import UpdateUserMessageCount
 
 
 def UpdatePlayerMessages(playerMessages: json, messagesValidated):
+    """Provided list of all player chat messages, extract relevant info and log it.
+
+    Args:
+        playerMessages (json): {ID:Message}
+        messagesValidated (_type_): Object to track the messages already reviewed.
+    """
     MessageCount = {}
     for MessageIndex in playerMessages:
         Message = playerMessages[MessageIndex]

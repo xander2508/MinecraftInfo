@@ -1,5 +1,9 @@
 import sys
+
+# sys.path.append("C:\\Program Files\\Brainwy\\PyVmMonitor 2.0.2\\public_api")
+# import pyvmmonitor
 import os
+import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -23,7 +27,7 @@ class Main:
 
 
 if __name__ == "__main__":
-
+    # pyvmmonitor.connect()
     MainProgram = Main()
     MainProgram.UpdateDiscordData()
     MainProgram.UpdatePlayerStatistics()

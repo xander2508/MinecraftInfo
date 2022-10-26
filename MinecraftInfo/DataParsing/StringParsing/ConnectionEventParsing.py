@@ -17,9 +17,14 @@ from MinecraftInfo.Util.FileOpener import LoadWebJsonFile
 from datetime import datetime, timezone
 
 
-def UpdatePlayerConnections(ConnectionMessages: json, messagesValidated):
-    for ConnectionMessageIndex in ConnectionMessages:
-        ConnectionMessage = ConnectionMessages[ConnectionMessageIndex][0]
+def UpdatePlayerConnections(connectionMessages: json, messagesValidated):
+    """Provided list of player connection events, extract relevant info from the message and log it.
+    Args:
+        connectionMessages (json): Player connection events {ID:[Message,Time]}.
+        messagesValidated (_type_): Object to track the messages already reviewed.
+    """
+    for ConnectionMessageIndex in connectionMessages:
+        ConnectionMessage = connectionMessages[ConnectionMessageIndex][0]
         FinalConnectionMessage, ConnectionEventMatch = GetConnectionEvent(
             ConnectionMessage
         )
@@ -30,7 +35,7 @@ def UpdatePlayerConnections(ConnectionMessages: json, messagesValidated):
                 int(ConnectionMessageIndex),
                 FinalConnectionMessage,
                 ConnectionEventMatch,
-                ConnectionMessages[ConnectionMessageIndex][1],
+                connectionMessages[ConnectionMessageIndex][1],
             )
         messagesValidated.MessageReviewed(ConnectionMessageIndex)
     UpdatePlayersOnlineFromMap()

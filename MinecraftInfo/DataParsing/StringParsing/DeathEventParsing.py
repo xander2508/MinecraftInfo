@@ -11,7 +11,11 @@ from MinecraftInfo.DataStorage.SqlQueries import (
 
 
 def UpdatePlayerDeaths(playerDeathMessages: json, messagesValidated):
-
+    """Provided list of player deaths, extract relevant info from the message and log it.
+    Args:
+        playerDeathMessages (json): Player deaths {ID:[Message,Time]}.
+        messagesValidated (_type_): Object to track the messages already reviewed.
+    """
     for DeathMessageIndex in playerDeathMessages:
         DeathMessage = playerDeathMessages[DeathMessageIndex][0]
 
@@ -29,25 +33,33 @@ def UpdatePlayerDeaths(playerDeathMessages: json, messagesValidated):
 
 
 def LogDeathMessageEvent(
-    DeathTypeMatch: re, FinalDeathString: str, DeathMessageIndex: int, timestamp: int
+    deathTypeMatch: re, finalDeathString: str, deathMessageIndex: int, timestamp: int
 ):
+    """Extract info from the death message string and log the event.
+
+    Args:
+        deathTypeMatch (re): The regex object of the important info. eg: players or items used.
+        finalDeathString (str): The string being interpreted.
+        deathMessageIndex (int): The message index.
+        timestamp (int): Time stamp the message was collected.
+    """
     Timestamp = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f+00:00")
     NameParser = NameParsing()
-    NumberOfMatches = len(DeathTypeMatch.groups())
+    NumberOfMatches = len(deathTypeMatch.groups())
     if NumberOfMatches >= 1:
-        UsernameDead = NameParser(DeathTypeMatch.group(1))
+        UsernameDead = NameParser(deathTypeMatch.group(1))
         if NumberOfMatches >= 2:
-            UsernameKiller = NameParser(DeathTypeMatch.group(2))
+            UsernameKiller = NameParser(deathTypeMatch.group(2))
         else:
             UsernameKiller = None
         if NumberOfMatches >= 3:
-            ItemUsed = DeathTypeMatch.group(3)
+            ItemUsed = deathTypeMatch.group(3)
             AddItem(ItemUsed)
         else:
             ItemUsed = None
         AddDeath(
-            DeathMessageIndex,
-            FinalDeathString,
+            deathMessageIndex,
+            finalDeathString,
             UsernameDead,
             Timestamp,
             UsernameKiller,
@@ -55,7 +67,15 @@ def LogDeathMessageEvent(
         )
 
 
-def GetDeathMessage(DeathMessage: json):
+def GetDeathMessage(DeathMessage: str):
+    """From the death message string extract the information groups.
+
+    Args:
+        DeathMessage (str): The death message string.
+
+    Returns:
+        _type_: The matched death message string and the regex object of those matches.
+    """
     FinalDeathString = None
     DeathTypeMatch = None
     DeathTypeMatchCount = 0

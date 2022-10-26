@@ -1,3 +1,5 @@
+import threading
+
 from MinecraftInfo.DataParsing.StringParsing.AchievementEventParsing import (
     UpdatePlayerAchievement,
 )
@@ -28,8 +30,40 @@ def PlayerStatistics(minecraftChatLog: list, messagesValidated) -> None:
         ]
     """
     for Source in minecraftChatLog:
-        UpdatePlayerDeaths(Source["Embeds"]["Death"], messagesValidated)
-        UpdatePlayerConnections(Source["Embeds"]["Connection"], messagesValidated)
-        UpdatePlayerAchievement(Source["Embeds"]["Achievement"], messagesValidated)
-        UpdatePlayerMessages(Source["Message"], messagesValidated)
-        ValidateUsers()
+        UpdatePlayerDeathsThread = threading.Thread(
+            target=UpdatePlayerDeaths,
+            args=(
+                Source["Embeds"]["Death"],
+                messagesValidated,
+            ),
+        )
+        # UpdatePlayerDeaths(Source["Embeds"]["Death"], messagesValidated)
+        UpdatePlayerConnectionsThread = threading.Thread(
+            target=UpdatePlayerConnections,
+            args=(
+                Source["Embeds"]["Connection"],
+                messagesValidated,
+            ),
+        )
+        # UpdatePlayerConnections(Source["Embeds"]["Connection"], messagesValidated)
+        UpdatePlayerAchievementThread = threading.Thread(
+            target=UpdatePlayerAchievement,
+            args=(
+                Source["Embeds"]["Achievement"],
+                messagesValidated,
+            ),
+        )
+        # UpdatePlayerAchievement(Source["Embeds"]["Achievement"], messagesValidated)
+        UpdatePlayerMessagesThread = threading.Thread(
+            target=UpdatePlayerMessages,
+            args=(
+                Source["Message"],
+                messagesValidated,
+            ),
+        )
+        # UpdatePlayerMessages(Source["Message"], messagesValidated)
+        UpdatePlayerDeathsThread.start()
+        UpdatePlayerConnectionsThread.start()
+        UpdatePlayerAchievementThread.start()
+        UpdatePlayerMessagesThread.start()
+    ValidateUsers()
