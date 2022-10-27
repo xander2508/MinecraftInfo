@@ -5,7 +5,7 @@ from MinecraftInfo.DataParsing.StringParsing.NameParsing import NameParsing
 from MinecraftInfo.DataStorage.SqlQueries import UpdateUserMessageCount
 
 
-def UpdatePlayerMessages(playerMessages: json, messagesValidated):
+def UpdatePlayerMessages(playerMessages: json, messagesValidated,NameParser, SqlQueryHandler):
     """Provided list of all player chat messages, extract relevant info and log it.
 
     Args:
@@ -15,7 +15,6 @@ def UpdatePlayerMessages(playerMessages: json, messagesValidated):
     MessageCount = {}
     for MessageIndex in playerMessages:
         Message = playerMessages[MessageIndex]
-        NameParser = NameParsing()
         Username, MessageText = GetMessage(Message)
         User = NameParser(Username)
         if User not in MessageCount:
@@ -24,7 +23,7 @@ def UpdatePlayerMessages(playerMessages: json, messagesValidated):
         messagesValidated.MessageReviewed(MessageIndex)
 
     for User in MessageCount:
-        UpdateUserMessageCount(User, MessageCount[User])
+        SqlQueryHandler.QueueQuery(UpdateUserMessageCount,User, MessageCount[User])
 
 
 def GetMessage(message: json):

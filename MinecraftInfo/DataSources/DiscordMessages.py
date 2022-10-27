@@ -1,3 +1,4 @@
+from datetime import datetime
 from logging import exception
 import requests
 import json
@@ -48,7 +49,7 @@ class DiscordMessages:
                                     Message["id"]
                                 ] = [
                                     Message["embeds"][0]["author"]["name"].strip("\\"),
-                                    Message["timestamp"],
+                                    datetime.strptime(Message["timestamp"], "%Y-%m-%dT%H:%M:%S.%f+00:00"),
                                 ]
                             elif "name" in Message["embeds"][0]["author"] and (
                                 "has made the advancement"
@@ -65,7 +66,7 @@ class DiscordMessages:
                                     Message["id"]
                                 ] = [
                                     Message["embeds"][0]["author"]["name"].strip("\\"),
-                                    Message["timestamp"],
+                                    datetime.strptime(Message["timestamp"], "%Y-%m-%dT%H:%M:%S.%f+00:00"),
                                 ]
                             else:
                                 DiscordMessagesList["Embeds"]["Other"][

@@ -10,7 +10,7 @@ from MinecraftInfo.DataStorage.SqlQueries import (
 )
 
 
-def UpdatePlayerDeaths(playerDeathMessages: json, messagesValidated):
+def UpdatePlayerDeaths(playerDeathMessages: json, messagesValidated, NameParser:callable, SqlQueryHandler):
     """Provided list of player deaths, extract relevant info from the message and log it.
     Args:
         playerDeathMessages (json): Player deaths {ID:[Message,Time]}.
@@ -21,19 +21,21 @@ def UpdatePlayerDeaths(playerDeathMessages: json, messagesValidated):
 
         FinalDeathString, DeathTypeMatch = GetDeathMessage(DeathMessage)
         if FinalDeathString == None:
-            LogUnknownEvent(DeathMessage)
+            SqlQueryHandler.QueueQuery(LogUnknownEvent,DeathMessage)
         else:
             LogDeathMessageEvent(
                 DeathTypeMatch,
                 FinalDeathString,
                 int(DeathMessageIndex),
                 playerDeathMessages[DeathMessageIndex][1],
+                NameParser,
+                SqlQueryHandler,
             )
         messagesValidated.MessageReviewed(DeathMessageIndex)
 
 
 def LogDeathMessageEvent(
-    deathTypeMatch: re, finalDeathString: str, deathMessageIndex: int, timestamp: int
+    deathTypeMatch: re, finalDeathString: str, deathMessageIndex: int, timestamp: int, NameParser: callable,SqlQueryHandler
 ):
     """Extract info from the death message string and log the event.
 
@@ -43,8 +45,7 @@ def LogDeathMessageEvent(
         deathMessageIndex (int): The message index.
         timestamp (int): Time stamp the message was collected.
     """
-    Timestamp = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f+00:00")
-    NameParser = NameParsing()
+    Timestamp = timestamp#datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f+00:00")
     NumberOfMatches = len(deathTypeMatch.groups())
     if NumberOfMatches >= 1:
         UsernameDead = NameParser(deathTypeMatch.group(1))
@@ -54,10 +55,10 @@ def LogDeathMessageEvent(
             UsernameKiller = None
         if NumberOfMatches >= 3:
             ItemUsed = deathTypeMatch.group(3)
-            AddItem(ItemUsed)
+            SqlQueryHandler.QueueQuery(AddItem,ItemUsed)
         else:
             ItemUsed = None
-        AddDeath(
+        SqlQueryHandler.QueueQuery(AddDeath,
             deathMessageIndex,
             finalDeathString,
             UsernameDead,

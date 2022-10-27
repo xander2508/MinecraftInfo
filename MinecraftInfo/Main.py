@@ -1,14 +1,16 @@
+from logging import exception
 import sys
 
-# sys.path.append("C:\\Program Files\\Brainwy\\PyVmMonitor 2.0.2\\public_api")
-# import pyvmmonitor
+
+sys.path.append("C:\\Program Files\\Brainwy\\PyVmMonitor 2.0.2\\public_api")
+import pyvmmonitor
 import os
 import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from MinecraftInfo.DataParsing.MessageValidation import MessagesReviewed
-
+from MinecraftInfo.DataParsing.SqlQueryHandler import SqlQueryHandler
 from MinecraftInfo.DataSources.DataHandler import DataHandler
 from MinecraftInfo.DataParsing.PlayerStatistics import PlayerStatistics
 
@@ -19,15 +21,22 @@ class Main:
         self.DataSourceHandler = DataHandler(self.MessagesValidated)
         self.DiscordData = {}
 
+
     def UpdateDiscordData(self) -> None:
         self.DiscordData = self.DataSourceHandler.GetData()
 
-    def UpdatePlayerStatistics(self) -> None:
-        PlayerStatistics(self.DiscordData, self.MessagesValidated)
-
+    def UpdatePlayerStatistics(self,SqlQueryHandler) -> None:
+        PlayerStatistics(self.DiscordData, self.MessagesValidated,SqlQueryHandler)
+    
 
 if __name__ == "__main__":
-    # pyvmmonitor.connect()
-    MainProgram = Main()
-    MainProgram.UpdateDiscordData()
-    MainProgram.UpdatePlayerStatistics()
+    try:
+        pyvmmonitor.connect()
+        SqlQueryHandler = SqlQueryHandler()
+        MainProgram = Main()
+        MainProgram.UpdateDiscordData()
+        MainProgram.UpdatePlayerStatistics(SqlQueryHandler)
+        SqlQueryHandler.Quit = True
+    except Exception as e:
+        SqlQueryHandler.Quit = True 
+        print(e)

@@ -10,10 +10,10 @@ from MinecraftInfo.DataParsing.StringParsing.ConnectionEventParsing import (
     UpdatePlayerConnections,
 )
 from MinecraftInfo.DataParsing.StringParsing.DeathEventParsing import UpdatePlayerDeaths
-from MinecraftInfo.DataParsing.StringParsing.NameParsing import ValidateUsers
+from MinecraftInfo.DataParsing.StringParsing.NameParsing import NameParsing, ValidateUsers
 
 
-def PlayerStatistics(minecraftChatLog: list, messagesValidated) -> None:
+def PlayerStatistics(minecraftChatLog: list, messagesValidated,SqlQueryHandler) -> None:
     """Given discord chat data update the player statistics.
 
     Args:
@@ -29,12 +29,16 @@ def PlayerStatistics(minecraftChatLog: list, messagesValidated) -> None:
             }
         ]
     """
+    NameParser = NameParsing(SqlQueryHandler)
+
     for Source in minecraftChatLog:
         UpdatePlayerDeathsThread = threading.Thread(
             target=UpdatePlayerDeaths,
             args=(
                 Source["Embeds"]["Death"],
                 messagesValidated,
+                NameParser,
+                SqlQueryHandler,
             ),
         )
         # UpdatePlayerDeaths(Source["Embeds"]["Death"], messagesValidated)
@@ -43,6 +47,8 @@ def PlayerStatistics(minecraftChatLog: list, messagesValidated) -> None:
             args=(
                 Source["Embeds"]["Connection"],
                 messagesValidated,
+                NameParser,
+                SqlQueryHandler,
             ),
         )
         # UpdatePlayerConnections(Source["Embeds"]["Connection"], messagesValidated)
@@ -51,6 +57,8 @@ def PlayerStatistics(minecraftChatLog: list, messagesValidated) -> None:
             args=(
                 Source["Embeds"]["Achievement"],
                 messagesValidated,
+                NameParser,
+                SqlQueryHandler,
             ),
         )
         # UpdatePlayerAchievement(Source["Embeds"]["Achievement"], messagesValidated)
@@ -59,6 +67,8 @@ def PlayerStatistics(minecraftChatLog: list, messagesValidated) -> None:
             args=(
                 Source["Message"],
                 messagesValidated,
+                NameParser,
+                SqlQueryHandler,
             ),
         )
         # UpdatePlayerMessages(Source["Message"], messagesValidated)
@@ -66,4 +76,8 @@ def PlayerStatistics(minecraftChatLog: list, messagesValidated) -> None:
         UpdatePlayerConnectionsThread.start()
         UpdatePlayerAchievementThread.start()
         UpdatePlayerMessagesThread.start()
-    ValidateUsers()
+        UpdatePlayerDeathsThread.join()
+        UpdatePlayerConnectionsThread.join()
+        UpdatePlayerAchievementThread.join()
+        UpdatePlayerMessagesThread.join()
+    ValidateUsers(SqlQueryHandler)

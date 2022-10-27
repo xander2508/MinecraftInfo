@@ -8,20 +8,11 @@ import threading
 class SqlQueryHandler:
     def __init__(self) -> None:
         self.SqlQueryQueue = deque()
-        self.HeartBeat = 1
-        QueueHandlerThread = threading.Thread(
+        self.Quit = False
+        self.QueueHandlerThread = threading.Thread(
             target=self.QueueHandler,
         )
-        QueueHandlerThread.start()
-        HeartBeatHandlerThread = threading.Thread(
-            target=self.HeartBeatHandler,
-        )
-        QueueHandlerThread.start()
-        HeartBeatHandlerThread.daemon = True
-        HeartBeatHandlerThread.start()
-        while True:
-            pass
-
+        self.QueueHandlerThread.start()
     def QueueQuery(self, queryFunction: Callable, *args: list) -> None:
         self.SqlQueryQueue.append([queryFunction, args])
 
@@ -29,17 +20,9 @@ class SqlQueryHandler:
         Query = self.SqlQueryQueue.popleft()
         Query[0](*(Query[1]))
 
-    def HeartBeatHandler(self):
-        while True:
-            time.sleep(5)
-            self.HeartBeat = 1
-
     def QueueHandler(self):
         while True:
-            if len(self.SqlQueryQueue) == 0:
-                if self.HeartBeat == 0:
-                    return
-                self.HeartBeat = 0
-                time.sleep(10)
-            else:
+            if self.Quit and len(self.SqlQueryQueue) == 0:
+                return
+            elif len(self.SqlQueryQueue) != 0:
                 self.DeQueueQuery()

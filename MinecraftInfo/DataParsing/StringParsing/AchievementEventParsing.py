@@ -10,7 +10,7 @@ from MinecraftInfo.DataStorage.SqlQueries import (
 from MinecraftInfo.DataParsing.StringParsing.NameParsing import NameParsing
 
 
-def UpdatePlayerAchievement(achievementMessages: json, messagesValidated):
+def UpdatePlayerAchievement(achievementMessages: json, messagesValidated,NameParser, SqlQueryHandler):
     """Provided list of player achievements, extract relevant info from the message and log it.
     Args:
         achievementMessages (json): Player achievement messages {ID:[Achievement message,Time]}.
@@ -22,12 +22,14 @@ def UpdatePlayerAchievement(achievementMessages: json, messagesValidated):
             AchievementMessage
         )
         if FinalAchievementMessage == None:
-            LogUnknownEvent(AchievementMessage)
+            SqlQueryHandler.QueueQuery(LogUnknownEvent,AchievementMessage)
         else:
             LogAchievementMessageEvent(
                 int(AchievementMessageIndex),
                 FinalAchievementMessage,
                 AchievementEventMatch,
+                NameParser,
+                SqlQueryHandler,
             )
         messagesValidated.MessageReviewed(AchievementMessageIndex)
 
@@ -59,9 +61,10 @@ def LogAchievementMessageEvent(
     AchievementMessageIndex: int,
     FinalAchievementString: str,
     AchievementTypeMatch: re,
+    NameParser,
+    SqlQueryHandler,
 ):
-    NameParser = NameParsing()
     Username = NameParser(AchievementTypeMatch.group(1))
     AchievementString = AchievementTypeMatch.group(2)
-    AddAchievement(AchievementString)
-    AddAchievementLink(Username, AchievementString)
+    SqlQueryHandler.QueueQuery(AddAchievement,AchievementString)
+    SqlQueryHandler.QueueQuery(AddAchievementLink,Username, AchievementString)
