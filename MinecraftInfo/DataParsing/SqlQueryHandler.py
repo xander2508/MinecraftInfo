@@ -9,6 +9,7 @@ class SqlQueryHandler:
     def __init__(self) -> None:
         self.SqlQueryQueue = deque()
         self.Quit = False
+        self.Timeout = 0
         self.QueueHandlerThread = threading.Thread(
             target=self.QueueHandler,
         )
@@ -25,4 +26,9 @@ class SqlQueryHandler:
             if self.Quit and len(self.SqlQueryQueue) == 0:
                 return
             elif len(self.SqlQueryQueue) != 0:
+                self.Timeout = 0
                 self.DeQueueQuery()
+            elif self.Timeout == 0:
+                self.Timeout = time.time()
+            elif time.time() - self.Timeout >= 60: # One Min
+                return

@@ -16,7 +16,11 @@ def UpdatePlayerDeaths(playerDeathMessages: json, messagesValidated, NameParser:
         playerDeathMessages (json): Player deaths {ID:[Message,Time]}.
         messagesValidated (_type_): Object to track the messages already reviewed.
     """
-    for DeathMessageIndex in playerDeathMessages:
+    playerDeathMessagesList = list(playerDeathMessages.keys())
+    playerDeathMessagesList_int = map(int, playerDeathMessagesList)
+    playerDeathMessagesList_str_sorted =  map(str,sorted(playerDeathMessagesList_int))
+    
+    for DeathMessageIndex in playerDeathMessagesList_str_sorted:
         DeathMessage = playerDeathMessages[DeathMessageIndex][0]
 
         FinalDeathString, DeathTypeMatch = GetDeathMessage(DeathMessage)

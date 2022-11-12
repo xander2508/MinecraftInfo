@@ -7,6 +7,7 @@ DATABASE_LOCATION = "MinecraftInfo\DataStorage\DataStorage.db"
 
 
 def AddUser(username: str):
+    username = str(username)
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
         with closing(sqliteConnection.cursor()) as cursor:
@@ -23,6 +24,7 @@ def AddUser(username: str):
 
 
 def AddItem(item: str):
+    item = str(item)
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
         with closing(sqliteConnection.cursor()) as cursor:
@@ -37,6 +39,7 @@ def AddItem(item: str):
 
 
 def AddRole(role: str):
+    role = str(role)
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
         with closing(sqliteConnection.cursor()) as cursor:
@@ -51,6 +54,8 @@ def AddRole(role: str):
 
 
 def AddRoleLink(username: str, role: str):
+    username = str(username)
+    role = str(role)
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
         with closing(sqliteConnection.cursor()) as cursor:
@@ -78,6 +83,11 @@ def AddDeath(
     usernameKiller: str = None,
     itemUsed: str = None,
 ):
+    messageID = int(messageID)
+    deathMessage = str(deathMessage)
+    usernameDead = str(usernameDead)
+    usernameKiller = str(usernameKiller)
+    itemUsed = str(itemUsed)
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
         with closing(sqliteConnection.cursor()) as cursor:
@@ -92,7 +102,7 @@ def AddDeath(
                     deathMessage,
                     int(
                         timestamp.timestamp() * 1000
-                    ),  # int(datetime.now(timezone.utc).timestamp() * 1000),
+                    ),
                 ),
             )
             sqliteConnection.commit()
@@ -191,13 +201,13 @@ def GetNicknameLinks():
         return NicknameLinksDict
 
 
-def UpdateUserLastOnline(user: str, timestamp: int):
+def UpdateUserLastSeen(user: str, timestamp: datetime):
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute("pragma foreign_keys=ON")
             cursor.execute(
-                "UPDATE Users SET LastOnline = (?) WHERE Name = (?)",
+                "UPDATE Users SET LastSeenOnline = (?) WHERE Name = (?)",
                 (
                     int(timestamp.timestamp() * 1000),
                     user,
@@ -210,34 +220,14 @@ def UpdateUserLastOnline(user: str, timestamp: int):
         if sqliteConnection:
             sqliteConnection.close()
 
-
-def UpdateUserPlayTime(user: str, timestamp: datetime):
+def SetUserOffline(user: str):
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute("pragma foreign_keys=ON")
-            LastOnlineSQL = cursor.execute(
-                "SELECT LastOnline FROM Users WHERE Name = (?) LIMIT 1",
-                (user,),
-            )
-
-            for i in LastOnlineSQL:
-                LastOnline = i[0]
-            if LastOnline != 0:
-                PlayTime = LastOnline - int(timestamp.timestamp() * 1000)
-            else:
-                PlayTime = 0
-            CurrentPlayTimeSQL = cursor.execute(
-                "SELECT PlayTime FROM Users WHERE Name = (?) LIMIT 1",
-                (user,),
-            )
-            for i in CurrentPlayTimeSQL:
-                CurrentPlayTime = i[0]
-            CurrentPlayTime += PlayTime
             cursor.execute(
-                "UPDATE Users SET PlayTime = (?) WHERE Name = (?)",
+                "UPDATE Users SET LoginTime = 0 WHERE Name = (?)",
                 (
-                    int(CurrentPlayTime),
                     user,
                 ),
             )
@@ -249,6 +239,49 @@ def UpdateUserPlayTime(user: str, timestamp: datetime):
             sqliteConnection.close()
 
 
+def UpdateUserTotalPlayTime(user: str):
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            LoginTimeSQL = cursor.execute(
+                "SELECT LoginTime, LastSeenOnline FROM Users WHERE Name = (?) LIMIT 1",
+                (user,),
+            )
+            LoginTime = 0
+            LastSeenOnline = 0
+            for i in LoginTimeSQL:
+                LoginTime, LastSeenOnline = i[0], i[1]
+
+            if LoginTime != 0:
+                PlayTime = LastSeenOnline - LoginTime
+            else:
+                PlayTime = 0
+
+            TotalPlayTimeSQL = cursor.execute(
+                "SELECT TotalPlayTime FROM Users WHERE Name = (?) LIMIT 1",
+                (user,),
+            )
+            TotalPlayTime = 0
+            for i in TotalPlayTimeSQL:
+                TotalPlayTime = i[0]
+            TotalPlayTime += PlayTime
+            cursor.execute(
+                "UPDATE Users SET TotalPlayTime = (?) WHERE Name = (?)",
+                (
+                    int(TotalPlayTime),
+                    user,
+                ),
+            )
+            sqliteConnection.commit()
+    except sqlite3.Error as error:
+        print("Log", error)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+    SetUserOffline(user)
+
+
 def GetOnlinePlayers():
     OnlinePlayers = []
     try:
@@ -256,7 +289,7 @@ def GetOnlinePlayers():
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute("pragma foreign_keys=ON")
             OnlinePlayersSQL = cursor.execute(
-                "SELECT Name FROM Users WHERE Online = 1",
+                "SELECT Name FROM Users WHERE NOT LoginTime = 0",
             )
             for Account in OnlinePlayersSQL:
                 OnlinePlayers.append(Account[0])
@@ -276,13 +309,12 @@ def GetOnlineStatus(user: str):
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute("pragma foreign_keys=ON")
             OnlineStatusSQL = cursor.execute(
-                "SELECT Online FROM Users WHERE Name = (?) LIMIT 1",
+                "SELECT LoginTime FROM Users WHERE Name = (?) LIMIT 1",
                 (user,),
             )
-            Online = []
             for i in OnlineStatusSQL:
-                Online.append(i[0])
-            if Online[0] == 1:
+                Online = i[0]
+            if int(Online):
                 OnlineStatus = True
             else:
                 OnlineStatus = False
@@ -295,25 +327,21 @@ def GetOnlineStatus(user: str):
         return OnlineStatus
 
 
-def UpdateUserOnline(user: str, online: bool):
+def UpdateLoginTime(user: str, timestamp: datetime):
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute("pragma foreign_keys=ON")
-            if online:
-                IntValue = 1
-            else:
-                IntValue = 0
-            cursor.execute(
-                "UPDATE Users SET Online = (?) WHERE Name = (?)",
-                (
-                    IntValue,
-                    user,
-                ),
-            )
-            sqliteConnection.commit()
+            if not GetOnlineStatus(user):
+                cursor.execute(
+                    "UPDATE Users SET LoginTime = (?) WHERE Name = (?)",
+                    (
+                        int(timestamp.timestamp() * 1000),
+                        user,
+                    ),
+                )
+                sqliteConnection.commit()
     except sqlite3.Error as error:
-
         print("Log", error)
     finally:
         if sqliteConnection:
@@ -516,7 +544,7 @@ def UpdateUserMessageCount(user: str, messageCount: int):
             cursor.execute(
                 "UPDATE Users SET MessagesSent = (?) WHERE Name = (?)",
                 (
-                    messageCount,
+                    MessagesSent,
                     user,
                 ),
             )

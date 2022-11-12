@@ -48,7 +48,7 @@ class DiscordMessages:
                                 DiscordMessagesList["Embeds"]["Death"][
                                     Message["id"]
                                 ] = [
-                                    Message["embeds"][0]["author"]["name"].strip("\\"),
+                                    Message["embeds"][0]["author"]["name"],
                                     datetime.strptime(Message["timestamp"], "%Y-%m-%dT%H:%M:%S.%f+00:00"),
                                 ]
                             elif "name" in Message["embeds"][0]["author"] and (
@@ -57,7 +57,7 @@ class DiscordMessages:
                             ):
                                 DiscordMessagesList["Embeds"]["Achievement"][
                                     Message["id"]
-                                ] = Message["embeds"][0]["author"]["name"].strip("\\")
+                                ] = Message["embeds"][0]["author"]["name"]
                             elif "name" in Message["embeds"][0]["author"] and (
                                 "joined" in Message["embeds"][0]["author"]["name"]
                                 or "left" in Message["embeds"][0]["author"]["name"]
@@ -65,13 +65,13 @@ class DiscordMessages:
                                 DiscordMessagesList["Embeds"]["Connection"][
                                     Message["id"]
                                 ] = [
-                                    Message["embeds"][0]["author"]["name"].strip("\\"),
+                                    Message["embeds"][0]["author"]["name"],
                                     datetime.strptime(Message["timestamp"], "%Y-%m-%dT%H:%M:%S.%f+00:00"),
                                 ]
                             else:
                                 DiscordMessagesList["Embeds"]["Other"][
                                     Message["id"]
-                                ] = Message["embeds"][0]["author"]["name"].strip("\\")
+                                ] = Message["embeds"][0]["author"]["name"]
                                 LogUnknownEvent("Unknown Message Type " + str(Message))
                     except Exception as Error:
                         LogUnknownEvent(

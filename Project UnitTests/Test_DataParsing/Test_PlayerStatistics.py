@@ -3,8 +3,7 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
-import MinecraftInfo.DataParsing.PlayerStatistics
+from MinecraftInfo.DataParsing.PlayerStatistics import PlayerStatistics
 
 
 def test__PlayerStatistics_CallsValidateUserOnce_WithOneEntry(mocker):
@@ -21,7 +20,7 @@ def test__PlayerStatistics_CallsValidateUserOnce_WithOneEntry(mocker):
         "MinecraftInfo.DataParsing.PlayerStatistics.UpdatePlayerMessages",
     )
     Object = mocker.patch("MinecraftInfo.DataParsing.PlayerStatistics.ValidateUsers")
-    MinecraftInfo.DataParsing.PlayerStatistics.PlayerStatistics(
+    PlayerStatistics(
         [
             {
                 "Message": {},

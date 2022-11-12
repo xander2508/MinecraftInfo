@@ -15,5 +15,12 @@
             "database": "${workspaceFolder:MinecraftInfo}/MinecraftInfo/Configuration/DataStorage.SQLITE3"
         }
     ],
-    "sqltools.useNodeRuntime": true
+    "sqltools.useNodeRuntime": true,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        ".",
+        "-p",
+        "test_*.py"
+    ]
 }

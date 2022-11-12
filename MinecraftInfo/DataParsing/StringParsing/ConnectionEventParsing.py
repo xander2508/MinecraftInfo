@@ -9,9 +9,9 @@ from MinecraftInfo.DataStorage.SqlQueries import (
     GetOnlinePlayers,
     GetOnlineStatus,
     LogUnknownEvent,
-    UpdateUserLastOnline,
-    UpdateUserOnline,
-    UpdateUserPlayTime,
+    UpdateLoginTime,
+    UpdateUserLastSeen,
+    UpdateUserTotalPlayTime,
 )
 from MinecraftInfo.Util.FileOpener import LoadWebJsonFile
 from datetime import datetime, timezone
@@ -23,7 +23,11 @@ def UpdatePlayerConnections(connectionMessages: json, messagesValidated,NamePars
         connectionMessages (json): Player connection events {ID:[Message,Time]}.
         messagesValidated (_type_): Object to track the messages already reviewed.
     """
-    for ConnectionMessageIndex in connectionMessages:
+    connectionMessagesList = list(connectionMessages.keys())
+    connectionMessagesList_int = map(int, connectionMessagesList)
+    connectionMessagesList_str_sorted =  map(str,sorted(connectionMessagesList_int))
+
+    for ConnectionMessageIndex in connectionMessagesList_str_sorted:
         ConnectionMessage = connectionMessages[ConnectionMessageIndex][0]
         FinalConnectionMessage, ConnectionEventMatch = GetConnectionEvent(
             ConnectionMessage
@@ -75,37 +79,13 @@ def LogConnectionMessageEvent(
     User = NameParser(Username)
     if "joined" in finalConnectionMessage.strip(Username):
         if not GetOnlineStatus(User):
-            SqlQueryHandler.QueueQuery(UpdateUserOnline,User, True)
-            SqlQueryHandler.QueueQuery(UpdateUserLastOnline,User, Timestamp)
+            SqlQueryHandler.QueueQuery(UpdateLoginTime,User, Timestamp)
+            SqlQueryHandler.QueueQuery(UpdateUserLastSeen,User, Timestamp)
     elif "left" in finalConnectionMessage.strip(Username):
         if GetOnlineStatus(User):
-            SqlQueryHandler.QueueQuery(UpdateUserOnline,User, False)
-            SqlQueryHandler.QueueQuery(UpdateUserPlayTime,User, Timestamp)
-            SqlQueryHandler.QueueQuery(UpdateUserLastOnline,User, Timestamp)
+            SqlQueryHandler.QueueQuery(UpdateUserLastSeen,User, Timestamp)
+            SqlQueryHandler.QueueQuery(UpdateUserTotalPlayTime,User)
 
-    OnlinePlayers = GetOnlinePlayers()
-    UsernameJson = LoadWebJsonFile(GetUsernameUrl())
-    OfflinePlayers = []
-    OnlinePlayersMisssed = []
-    for i in OnlinePlayers:
-        OnlinePlayersMisssed.append(i)
-    for player in UsernameJson["players"]:
-        if player["account"] not in OnlinePlayers:
-            try:
-                OfflinePlayers.append(player["account"])
-            except:
-                pass
-            try:
-                OnlinePlayersMisssed.pop(player["account"])
-            except:
-                pass
-
-    for i in OfflinePlayers:
-        SqlQueryHandler.QueueQuery(UpdateUserOnline,i, False)
-        SqlQueryHandler.QueueQuery(UpdateUserLastOnline,i, Timestamp)
-    for i in OnlinePlayersMisssed:
-        SqlQueryHandler.QueueQuery(UpdateUserOnline,i, True)
-        SqlQueryHandler.QueueQuery(UpdateUserLastOnline,i, Timestamp)
 
 
 def UpdatePlayersOnlineFromMap(SqlQueryHandler):
@@ -113,5 +93,18 @@ def UpdatePlayersOnlineFromMap(SqlQueryHandler):
     for player in UsernameJson["players"]:
         SqlQueryHandler.QueueQuery(AddUser,player["account"])
         SqlQueryHandler.QueueQuery(AddNickname,player["account"], player["name"])
-        SqlQueryHandler.QueueQuery(UpdateUserOnline,player["account"], True)
-        SqlQueryHandler.QueueQuery(UpdateUserLastOnline,player["account"], datetime.now(timezone.utc))
+        SqlQueryHandler.QueueQuery(UpdateLoginTime,player["account"], datetime.now(timezone.utc))
+        SqlQueryHandler.QueueQuery(UpdateUserLastSeen,player["account"], datetime.now(timezone.utc))
+
+    OnlinePlayers = GetOnlinePlayers()
+    UsernameJson = LoadWebJsonFile(GetUsernameUrl())
+    OfflinePlayers = []
+    for player in UsernameJson["players"]:
+        if player["account"] not in OnlinePlayers:
+            try:
+                OfflinePlayers.append(player["account"])
+            except:
+                pass
+
+    for i in OfflinePlayers:
+        SqlQueryHandler.QueueQuery(UpdateUserTotalPlayTime,i)

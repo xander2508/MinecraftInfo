@@ -2,8 +2,8 @@ from logging import exception
 import sys
 
 
-sys.path.append("C:\\Program Files\\Brainwy\\PyVmMonitor 2.0.2\\public_api")
-import pyvmmonitor
+#sys.path.append("C:\\Program Files\\Brainwy\\PyVmMonitor 2.0.2\\public_api")
+#import pyvmmonitor
 import os
 import time
 
@@ -30,13 +30,18 @@ class Main:
     
 
 if __name__ == "__main__":
+    count = 0
     try:
-        pyvmmonitor.connect()
         SqlQueryHandler = SqlQueryHandler()
         MainProgram = Main()
-        MainProgram.UpdateDiscordData()
-        MainProgram.UpdatePlayerStatistics(SqlQueryHandler)
-        SqlQueryHandler.Quit = True
+        while True:
+            MainProgram.UpdateDiscordData()
+            MainProgram.UpdatePlayerStatistics(SqlQueryHandler)
+            time.sleep(20)
+            print(count)
+            count += 1
     except Exception as e:
         SqlQueryHandler.Quit = True 
         print(e)
+    except KeyboardInterrupt:
+        SqlQueryHandler.Quit = True

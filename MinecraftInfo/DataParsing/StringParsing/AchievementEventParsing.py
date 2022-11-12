@@ -16,8 +16,12 @@ def UpdatePlayerAchievement(achievementMessages: json, messagesValidated,NamePar
         achievementMessages (json): Player achievement messages {ID:[Achievement message,Time]}.
         messagesValidated (_type_): Object to track the messages already reviewed.
     """
-    for AchievementMessageIndex in achievementMessages:
-        AchievementMessage = achievementMessages[AchievementMessageIndex][0]
+    achievementMessagesList = list(achievementMessages.keys())
+    achievementMessagesList_int = map(int, achievementMessagesList)
+    achievementMessagesList_str_sorted =  map(str,sorted(achievementMessagesList_int))
+    
+    for AchievementMessageIndex in achievementMessagesList_str_sorted:
+        AchievementMessage = achievementMessages[AchievementMessageIndex]
         FinalAchievementMessage, AchievementEventMatch = GetAchievementEvent(
             AchievementMessage
         )
@@ -68,3 +72,4 @@ def LogAchievementMessageEvent(
     AchievementString = AchievementTypeMatch.group(2)
     SqlQueryHandler.QueueQuery(AddAchievement,AchievementString)
     SqlQueryHandler.QueueQuery(AddAchievementLink,Username, AchievementString)
+
