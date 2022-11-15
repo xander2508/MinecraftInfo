@@ -14,6 +14,7 @@ class SqlQueryHandler:
             target=self.QueueHandler,
         )
         self.QueueHandlerThread.start()
+
     def QueueQuery(self, queryFunction: Callable, *args: list) -> None:
         self.SqlQueryQueue.append([queryFunction, args])
 
@@ -21,7 +22,7 @@ class SqlQueryHandler:
         Query = self.SqlQueryQueue.popleft()
         Query[0](*(Query[1]))
 
-    def QueueHandler(self):
+    def QueueHandler(self) -> None:
         while True:
             if self.Quit and len(self.SqlQueryQueue) == 0:
                 return
@@ -30,5 +31,5 @@ class SqlQueryHandler:
                 self.DeQueueQuery()
             elif self.Timeout == 0:
                 self.Timeout = time.time()
-            elif time.time() - self.Timeout >= 60: # One Min
+            elif time.time() - self.Timeout >= 60:  # One Min
                 return

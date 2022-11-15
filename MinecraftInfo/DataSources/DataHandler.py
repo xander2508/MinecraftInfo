@@ -1,6 +1,6 @@
 from MinecraftInfo.DataSources.DiscordMessages import DiscordMessages
 from MinecraftInfo.DataSources.DiscordGuildHandler import DiscordGuildHandler
-from MinecraftInfo.DataStorage.JsonQueries import (
+from MinecraftInfo.Util.JsonQueries import (
     GetMarketplacesHandler,
     GetOfficialChatChannelHandler,
 )

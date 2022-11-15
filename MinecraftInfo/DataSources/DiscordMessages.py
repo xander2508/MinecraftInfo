@@ -3,7 +3,7 @@ from logging import exception
 import requests
 import json
 import MinecraftInfo.DataSources.AuthToken as AuthToken
-from MinecraftInfo.DataStorage.SqlQueries import LogUnknownEvent
+from MinecraftInfo.Util.SqlQueries import LogUnknownEvent
 
 
 class DiscordMessages:
@@ -17,7 +17,7 @@ class DiscordMessages:
         """
         self.__ChannelID = channelID
 
-    def RetrieveMessageList(self, messagesValidated) -> list:
+    def RetrieveMessageList(self, messagesValidated: object) -> list:
         """Format the retrieved messages from the discord channel into a list.
 
         Returns:
@@ -49,7 +49,10 @@ class DiscordMessages:
                                     Message["id"]
                                 ] = [
                                     Message["embeds"][0]["author"]["name"],
-                                    datetime.strptime(Message["timestamp"], "%Y-%m-%dT%H:%M:%S.%f+00:00"),
+                                    datetime.strptime(
+                                        Message["timestamp"],
+                                        "%Y-%m-%dT%H:%M:%S.%f+00:00",
+                                    ),
                                 ]
                             elif "name" in Message["embeds"][0]["author"] and (
                                 "has made the advancement"
@@ -66,7 +69,10 @@ class DiscordMessages:
                                     Message["id"]
                                 ] = [
                                     Message["embeds"][0]["author"]["name"],
-                                    datetime.strptime(Message["timestamp"], "%Y-%m-%dT%H:%M:%S.%f+00:00"),
+                                    datetime.strptime(
+                                        Message["timestamp"],
+                                        "%Y-%m-%dT%H:%M:%S.%f+00:00",
+                                    ),
                                 ]
                             else:
                                 DiscordMessagesList["Embeds"]["Other"][

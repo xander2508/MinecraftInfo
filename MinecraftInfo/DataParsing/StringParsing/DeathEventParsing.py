@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 import json
 from MinecraftInfo.DataParsing.StringParsing.NameParsing import NameParsing
 import re
-from MinecraftInfo.DataStorage.SqlQueries import (
+from MinecraftInfo.Util.SqlQueries import (
     LogUnknownEvent,
     AddItem,
     AddDeath,
@@ -10,7 +10,9 @@ from MinecraftInfo.DataStorage.SqlQueries import (
 )
 
 
-def UpdatePlayerDeaths(playerDeathMessages: json, messagesValidated, NameParser:callable, SqlQueryHandler):
+def UpdatePlayerDeaths(
+    playerDeathMessages: json, messagesValidated, nameParser: callable, sqlQueryHandler
+):
     """Provided list of player deaths, extract relevant info from the message and log it.
     Args:
         playerDeathMessages (json): Player deaths {ID:[Message,Time]}.
@@ -18,29 +20,34 @@ def UpdatePlayerDeaths(playerDeathMessages: json, messagesValidated, NameParser:
     """
     playerDeathMessagesList = list(playerDeathMessages.keys())
     playerDeathMessagesList_int = map(int, playerDeathMessagesList)
-    playerDeathMessagesList_str_sorted =  map(str,sorted(playerDeathMessagesList_int))
-    
+    playerDeathMessagesList_str_sorted = map(str, sorted(playerDeathMessagesList_int))
+
     for DeathMessageIndex in playerDeathMessagesList_str_sorted:
         DeathMessage = playerDeathMessages[DeathMessageIndex][0]
 
         FinalDeathString, DeathTypeMatch = GetDeathMessage(DeathMessage)
         if FinalDeathString == None:
-            SqlQueryHandler.QueueQuery(LogUnknownEvent,DeathMessage)
+            sqlQueryHandler.QueueQuery(LogUnknownEvent, DeathMessage)
         else:
             LogDeathMessageEvent(
                 DeathTypeMatch,
                 FinalDeathString,
                 int(DeathMessageIndex),
                 playerDeathMessages[DeathMessageIndex][1],
-                NameParser,
-                SqlQueryHandler,
+                nameParser,
+                sqlQueryHandler,
             )
         messagesValidated.MessageReviewed(DeathMessageIndex)
 
 
 def LogDeathMessageEvent(
-    deathTypeMatch: re, finalDeathString: str, deathMessageIndex: int, timestamp: int, NameParser: callable,SqlQueryHandler
-):
+    deathTypeMatch: re,
+    finalDeathString: str,
+    deathMessageIndex: int,
+    timestamp: int,
+    nameParser: callable,
+    sqlQueryHandler,
+) -> None:
     """Extract info from the death message string and log the event.
 
     Args:
@@ -49,20 +56,21 @@ def LogDeathMessageEvent(
         deathMessageIndex (int): The message index.
         timestamp (int): Time stamp the message was collected.
     """
-    Timestamp = timestamp#datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f+00:00")
+    Timestamp = timestamp  # datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f+00:00")
     NumberOfMatches = len(deathTypeMatch.groups())
     if NumberOfMatches >= 1:
-        UsernameDead = NameParser(deathTypeMatch.group(1))
+        UsernameDead = nameParser(deathTypeMatch.group(1))
         if NumberOfMatches >= 2:
-            UsernameKiller = NameParser(deathTypeMatch.group(2))
+            UsernameKiller = nameParser(deathTypeMatch.group(2))
         else:
             UsernameKiller = None
         if NumberOfMatches >= 3:
             ItemUsed = deathTypeMatch.group(3)
-            SqlQueryHandler.QueueQuery(AddItem,ItemUsed)
+            sqlQueryHandler.QueueQuery(AddItem, ItemUsed)
         else:
             ItemUsed = None
-        SqlQueryHandler.QueueQuery(AddDeath,
+        sqlQueryHandler.QueueQuery(
+            AddDeath,
             deathMessageIndex,
             finalDeathString,
             UsernameDead,
@@ -72,11 +80,11 @@ def LogDeathMessageEvent(
         )
 
 
-def GetDeathMessage(DeathMessage: str):
+def GetDeathMessage(deathMessage: str) -> tuple(str, object):
     """From the death message string extract the information groups.
 
     Args:
-        DeathMessage (str): The death message string.
+        deathMessage (str): The death message string.
 
     Returns:
         _type_: The matched death message string and the regex object of those matches.
@@ -91,7 +99,7 @@ def GetDeathMessage(DeathMessage: str):
         DeathTypeStringRegex = DeathTypeStringRegex.replace("<player>", "(.*)")
         DeathTypeStringRegex = DeathTypeStringRegex.replace("<player/mob>", "(.*)")
         DeathTypeStringRegex = DeathTypeStringRegex.replace("<item>", "(.*)")
-        if match := re.search(DeathTypeStringRegex, DeathMessage):
+        if match := re.search(DeathTypeStringRegex, deathMessage):
             numberOfMatches = len(match.groups())
             if numberOfMatches > DeathTypeMatchCount:
                 DeathTypeMatchCount = numberOfMatches

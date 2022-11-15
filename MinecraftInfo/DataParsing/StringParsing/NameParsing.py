@@ -1,7 +1,7 @@
 import json
 from logging import exception
 from typing import Callable
-from MinecraftInfo.DataStorage.SqlQueries import (
+from MinecraftInfo.Util.SqlQueries import (
     AddNickname,
     AddRole,
     AddRoleLink,
@@ -11,19 +11,19 @@ from MinecraftInfo.DataStorage.SqlQueries import (
     UpdateUsername,
 )
 from MinecraftInfo.Util.FileOpener import LoadWebJsonFile
-from MinecraftInfo.DataStorage.JsonQueries import GetUsernameUrl
+from MinecraftInfo.Util.JsonQueries import GetUsernameUrl
 
 
-def NameParsing(SqlQueryHandler) -> Callable:
+def NameParsing(sqlQueryHandler) -> Callable:
     """Wrapper for ExtractNames. Stores the JSON from the website containing online users so that the large JSON does not have to be repeatably called.
 
     Returns:
         ExtractNames: ExtractNames function
     """
     UsernameJson = LoadWebJsonFile(GetUsernameUrl())
-    SqlQueryHandler  = SqlQueryHandler
-    
-    def ExtractNames(nameString: str):
+    SqlQueryHandler = sqlQueryHandler
+
+    def ExtractNames(nameString: str) -> None:
         """Given a username string containing a nickname and account name, split them up and store the relevant parts in the database.
 
         Args:
@@ -39,29 +39,29 @@ def NameParsing(SqlQueryHandler) -> Callable:
             if Account != None:
                 PlayerAccount = Account
             else:
-                SqlQueryHandler.QueueQuery(AddUser,Nickname)
-                SqlQueryHandler.QueueQuery(AddNickname,Nickname, Nickname)
+                SqlQueryHandler.QueueQuery(AddUser, Nickname)
+                SqlQueryHandler.QueueQuery(AddNickname, Nickname, Nickname)
                 PlayerAccount = Nickname
         else:
-            SqlQueryHandler.QueueQuery(AddUser,PlayerAccount)
-            SqlQueryHandler.QueueQuery(AddNickname,PlayerAccount, PlayerName)
+            SqlQueryHandler.QueueQuery(AddUser, PlayerAccount)
+            SqlQueryHandler.QueueQuery(AddNickname, PlayerAccount, PlayerName)
         if len(nameString.split(" ")) > 1:
             Nickname = (" ".join((nameString.split(" ")[:-1]))).strip()
         else:
             Nickname = None
 
         if Nickname == None:
-            SqlQueryHandler.QueueQuery(AddRole,"None")
-            SqlQueryHandler.QueueQuery(AddRoleLink,PlayerAccount, "None")
+            SqlQueryHandler.QueueQuery(AddRole, "None")
+            SqlQueryHandler.QueueQuery(AddRoleLink, PlayerAccount, "None")
         else:
-            SqlQueryHandler.QueueQuery(AddRole,Nickname.strip("*"))
-            SqlQueryHandler.QueueQuery(AddRoleLink,PlayerAccount, Nickname.strip("*"))
+            SqlQueryHandler.QueueQuery(AddRole, Nickname.strip("*"))
+            SqlQueryHandler.QueueQuery(AddRoleLink, PlayerAccount, Nickname.strip("*"))
         return PlayerAccount
 
     return ExtractNames
 
 
-def GetUsername(username: str, usernameJson: json):
+def GetUsername(username: str, usernameJson: json) -> tuple(str, str):
     """Given a username, validate the string with the up-to-date website log and return the account and nickname.
 
     Args:
@@ -80,7 +80,7 @@ def GetUsername(username: str, usernameJson: json):
     return None, username
 
 
-def ValidateUsers(SqlQueryHandler):
+def ValidateUsers(sqlQueryHandler) -> None:
     """Get all the nickname links where both entries are the same and check for a logged in user with the same nickname.
     If a user with that nickname is found, update the entry to the correct account name.
     """
@@ -92,5 +92,7 @@ def ValidateUsers(SqlQueryHandler):
             for player in UsernameJson["players"]:
                 if player["account"] in Username or player["name"] in Username:
                     UsernameVerified = player["account"]
-                    SqlQueryHandler.QueueQuery(UpdateUsername, Username, UsernameVerified)
+                    sqlQueryHandler.QueueQuery(
+                        UpdateUsername, Username, UsernameVerified
+                    )
                     break

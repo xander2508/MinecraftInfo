@@ -1,6 +1,6 @@
 from collections import deque
 
-from MinecraftInfo.DataStorage.SqlQueries import (
+from MinecraftInfo.Util.SqlQueries import (
     GetMessageReviewedIDs,
     InsertMessageReviewedIDs,
     InsertMessageReviewedID,
@@ -16,19 +16,19 @@ class MessagesReviewed:
         self.IDsReviewed = deque()
         self.__GetFromDatabase()
 
-    def ReviewMessage(self, messageID: int):
+    def ReviewMessage(self, messageID: int) -> bool:
         if messageID not in self.IDsReviewed:
             return True
         else:
             return False
 
-    def __GetFromDatabase(self):
+    def __GetFromDatabase(self) -> None:
         self.IDsReviewed.append(GetMessageReviewedIDs())
 
-    def __PushToDatabase(self, messageID: int):
+    def __PushToDatabase(self, messageID: int) -> None:
         InsertMessageReviewedID(messageID)
 
-    def MessageReviewed(self, messageID):
+    def MessageReviewed(self, messageID) -> None:
         if messageID not in self.IDsReviewed:
             if len(self.IDsReviewed) >= ID_LIMIT:
                 DeleteMessageReviewedID(self.IDsReviewed.popleft())

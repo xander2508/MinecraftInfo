@@ -1,8 +1,8 @@
 import json
 import re
 from MinecraftInfo.DataParsing.StringParsing.NameParsing import NameParsing
-from MinecraftInfo.DataStorage.JsonQueries import GetUsernameUrl
-from MinecraftInfo.DataStorage.SqlQueries import (
+from MinecraftInfo.Util.JsonQueries import GetUsernameUrl
+from MinecraftInfo.Util.SqlQueries import (
     AddNickname,
     AddUser,
     GetConnectionMessages,
@@ -17,7 +17,9 @@ from MinecraftInfo.Util.FileOpener import LoadWebJsonFile
 from datetime import datetime, timezone
 
 
-def UpdatePlayerConnections(connectionMessages: json, messagesValidated,NameParser, SqlQueryHandler):
+def UpdatePlayerConnections(
+    connectionMessages: json, messagesValidated, nameParser, sqlQueryHandler
+) -> None:
     """Provided list of player connection events, extract relevant info from the message and log it.
     Args:
         connectionMessages (json): Player connection events {ID:[Message,Time]}.
@@ -25,7 +27,7 @@ def UpdatePlayerConnections(connectionMessages: json, messagesValidated,NamePars
     """
     connectionMessagesList = list(connectionMessages.keys())
     connectionMessagesList_int = map(int, connectionMessagesList)
-    connectionMessagesList_str_sorted =  map(str,sorted(connectionMessagesList_int))
+    connectionMessagesList_str_sorted = map(str, sorted(connectionMessagesList_int))
 
     for ConnectionMessageIndex in connectionMessagesList_str_sorted:
         ConnectionMessage = connectionMessages[ConnectionMessageIndex][0]
@@ -33,21 +35,21 @@ def UpdatePlayerConnections(connectionMessages: json, messagesValidated,NamePars
             ConnectionMessage
         )
         if FinalConnectionMessage == None:
-            SqlQueryHandler.QueueQuery(LogUnknownEvent,ConnectionMessage)
+            sqlQueryHandler.QueueQuery(LogUnknownEvent, ConnectionMessage)
         else:
             LogConnectionMessageEvent(
                 int(ConnectionMessageIndex),
                 FinalConnectionMessage,
                 ConnectionEventMatch,
                 connectionMessages[ConnectionMessageIndex][1],
-                NameParser,
-                SqlQueryHandler,
+                nameParser,
+                sqlQueryHandler,
             )
         messagesValidated.MessageReviewed(ConnectionMessageIndex)
-    UpdatePlayersOnlineFromMap(SqlQueryHandler)
+    UpdatePlayersOnlineFromMap(sqlQueryHandler)
 
 
-def GetConnectionEvent(ConnectionMessage: str):
+def GetConnectionEvent(connectionMessage: str) -> tuple(str, str):
     FinalConnectionMessage = None
     ConnectionEventMatch = None
     ConnectionEventMatchCount = 0
@@ -56,11 +58,11 @@ def GetConnectionEvent(ConnectionMessage: str):
         ConnectionEventString = ConnectionEventDict[ConnectionEventIndex]
         ConnectionEventRegex = ConnectionEventString
         ConnectionEventRegex = ConnectionEventRegex.replace("<player>", "(.*)")
-        if match := re.search(ConnectionEventRegex, ConnectionMessage):
+        if match := re.search(ConnectionEventRegex, connectionMessage):
             numberOfMatches = len(match.groups())
             if numberOfMatches > ConnectionEventMatchCount:
                 ConnectionEventMatchCount = numberOfMatches
-                FinalConnectionMessage = ConnectionMessage
+                FinalConnectionMessage = connectionMessage
                 ConnectionEventMatch = match
 
     return FinalConnectionMessage, ConnectionEventMatch
@@ -70,31 +72,34 @@ def LogConnectionMessageEvent(
     connectionMessageIndex: int,
     finalConnectionMessage: str,
     connectionEventMatch: re.match,
-    Timestamp: str,
-    NameParser: callable,
-    SqlQueryHandler,
-):
+    timestamp: str,
+    nameParser: callable,
+    sqlQueryHandler,
+) -> None:
     # datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f+00:00")
     Username = connectionEventMatch.group(1)
-    User = NameParser(Username)
+    User = nameParser(Username)
     if "joined" in finalConnectionMessage.strip(Username):
         if not GetOnlineStatus(User):
-            SqlQueryHandler.QueueQuery(UpdateLoginTime,User, Timestamp)
-            SqlQueryHandler.QueueQuery(UpdateUserLastSeen,User, Timestamp)
+            sqlQueryHandler.QueueQuery(UpdateLoginTime, User, timestamp)
+            sqlQueryHandler.QueueQuery(UpdateUserLastSeen, User, timestamp)
     elif "left" in finalConnectionMessage.strip(Username):
         if GetOnlineStatus(User):
-            SqlQueryHandler.QueueQuery(UpdateUserLastSeen,User, Timestamp)
-            SqlQueryHandler.QueueQuery(UpdateUserTotalPlayTime,User)
+            sqlQueryHandler.QueueQuery(UpdateUserLastSeen, User, timestamp)
+            sqlQueryHandler.QueueQuery(UpdateUserTotalPlayTime, User)
 
 
-
-def UpdatePlayersOnlineFromMap(SqlQueryHandler):
+def UpdatePlayersOnlineFromMap(sqlQueryHandler) -> None:
     UsernameJson = LoadWebJsonFile(GetUsernameUrl())
     for player in UsernameJson["players"]:
-        SqlQueryHandler.QueueQuery(AddUser,player["account"])
-        SqlQueryHandler.QueueQuery(AddNickname,player["account"], player["name"])
-        SqlQueryHandler.QueueQuery(UpdateLoginTime,player["account"], datetime.now(timezone.utc))
-        SqlQueryHandler.QueueQuery(UpdateUserLastSeen,player["account"], datetime.now(timezone.utc))
+        sqlQueryHandler.QueueQuery(AddUser, player["account"])
+        sqlQueryHandler.QueueQuery(AddNickname, player["account"], player["name"])
+        sqlQueryHandler.QueueQuery(
+            UpdateLoginTime, player["account"], datetime.now(timezone.utc)
+        )
+        sqlQueryHandler.QueueQuery(
+            UpdateUserLastSeen, player["account"], datetime.now(timezone.utc)
+        )
 
     OnlinePlayers = GetOnlinePlayers()
     UsernameJson = LoadWebJsonFile(GetUsernameUrl())
@@ -107,4 +112,4 @@ def UpdatePlayersOnlineFromMap(SqlQueryHandler):
                 pass
 
     for i in OfflinePlayers:
-        SqlQueryHandler.QueueQuery(UpdateUserTotalPlayTime,i)
+        sqlQueryHandler.QueueQuery(UpdateUserTotalPlayTime, i)

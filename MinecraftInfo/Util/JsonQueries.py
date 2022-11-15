@@ -1,20 +1,25 @@
+import json
 from MinecraftInfo.Util.FileOpener import LoadJsonFile
 
 
 JSON_LOCATION = "MinecraftInfo\DataStorage\Configuration\DataSourceLocations.json"
 
 
-def GetUsernameUrl():
+def GetUsernameUrl() -> str:
     return LoadJsonFile(JSON_LOCATION)["UsernameURL"]
 
 
-def GetOfficialChatChannelHandler():
+def GetOfficialChatChannelHandler() -> str:
     return LoadJsonFile(JSON_LOCATION)["Discord"]["Guilds"]["OfficialChat"]
 
 
-def GetMarketplacesHandler():
+def GetMarketplacesHandler() -> dict(str):
     return LoadJsonFile(JSON_LOCATION)["Discord"]["Guilds"]["Marketplaces"]
 
 
-def GetFullJson():
+def GetDatabaseLocation() -> str:
+    return LoadJsonFile(JSON_LOCATION)["DatabaseLocation"]
+
+
+def GetFullJson() -> json:
     return LoadJsonFile(JSON_LOCATION)
