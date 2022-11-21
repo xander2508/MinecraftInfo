@@ -1,9 +1,11 @@
 from datetime import datetime
 from logging import exception
+import sys
 import requests
 import json
 import MinecraftInfo.DataSources.AuthToken as AuthToken
 from MinecraftInfo.Util.SqlQueries import LogUnknownEvent
+from MinecraftInfo.Util.Logging import LogError
 
 
 class DiscordMessages:
@@ -107,6 +109,6 @@ def RequestDiscordMessages(channelID: int) -> json:
         if "author" not in ResponseJson[0]:
             return json.loads(json.dumps([]))
     except Exception as e:
-        print("Error", e)  # LOG
+        LogError(e, __name__, sys._getframe().f_code.co_name)  # LOG
         return json.loads(json.dumps([]))
     return ResponseJson

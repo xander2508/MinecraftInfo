@@ -27,7 +27,7 @@ class DataHandler:
                 DiscordGuildHandler(self.DataSourceLocations[Guild])
             )
 
-    def GetData(self) -> list[list, list]:
+    def GetData(self) -> list:
         """Return the last messages from the minecraft chat log and monitored guilds.
 
         Returns:

@@ -49,7 +49,7 @@ def UpdatePlayerConnections(
     UpdatePlayersOnlineFromMap(sqlQueryHandler)
 
 
-def GetConnectionEvent(connectionMessage: str) -> tuple(str, str):
+def GetConnectionEvent(connectionMessage: str) -> tuple:
     FinalConnectionMessage = None
     ConnectionEventMatch = None
     ConnectionEventMatchCount = 0

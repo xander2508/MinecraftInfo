@@ -40,7 +40,7 @@ def UpdatePlayerAchievement(
         messagesValidated.MessageReviewed(AchievementMessageIndex)
 
 
-def GetAchievementEvent(achievementMessage: json) -> tuple(str, object):
+def GetAchievementEvent(achievementMessage: json) -> tuple:
     """Retrieve the achievement type from the raw message
 
     Args:

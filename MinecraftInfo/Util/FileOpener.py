@@ -1,5 +1,8 @@
 import json
+import sys
 import requests
+
+from MinecraftInfo.Util.Logging import LogError
 
 
 def LoadJsonFile(path: str) -> json:
@@ -7,7 +10,7 @@ def LoadJsonFile(path: str) -> json:
         with open(path) as JsonFile:
             DataSource = json.load(JsonFile)
     except Exception as error:
-        print(error)  # Log
+        LogError(error, __name__, sys._getframe().f_code.co_name)
         DataSource = json.loads(json.dumps([{}]))
     finally:
         return DataSource
@@ -18,7 +21,7 @@ def LoadWebJsonFile(urlPath: str) -> json:
         response = requests.get(urlPath)
         DataSource = json.loads(response.text)
     except Exception as error:
-        print(error)  # Log
+        LogError(error, __name__, sys._getframe().f_code.co_name)
         DataSource = json.loads(json.dumps([{}]))
     finally:
         return DataSource

@@ -1,6 +1,8 @@
 import json
 from logging import exception
+import sys
 from typing import Callable
+from MinecraftInfo.Util.Logging import LogError
 from MinecraftInfo.Util.SqlQueries import (
     AddNickname,
     AddRole,
@@ -61,7 +63,7 @@ def NameParsing(sqlQueryHandler) -> Callable:
     return ExtractNames
 
 
-def GetUsername(username: str, usernameJson: json) -> tuple(str, str):
+def GetUsername(username: str, usernameJson: json) -> tuple:
     """Given a username, validate the string with the up-to-date website log and return the account and nickname.
 
     Args:
@@ -75,7 +77,7 @@ def GetUsername(username: str, usernameJson: json) -> tuple(str, str):
             if player["name"] in username or player["account"] in username:
                 return player["account"], player["name"]
     except Exception as e:
-        print("Log" + str(e))
+        LogError(e, __name__, sys._getframe().f_code.co_name)
 
     return None, username
 

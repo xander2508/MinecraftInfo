@@ -39,7 +39,7 @@ from MinecraftInfo.Util.SqlQueries import (
 app = Flask(__name__)
 
 
-def GetAutocompleteLists() -> tuple(str, str, str, str):
+def GetAutocompleteLists() -> tuple:
     """Retrieve the lists of searchable terms within the website.
 
     Returns:
@@ -422,6 +422,10 @@ def SearchRole() -> object:
             achievements=Achievements,
             roles=Roles,
         )
+
+
+def RunWebsite():
+    app.run(host="127.0.0.1", port=80, debug=True)
 
 
 if __name__ == "__main__":

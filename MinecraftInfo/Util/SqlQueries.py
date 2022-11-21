@@ -1,13 +1,16 @@
 import sqlite3
+import sys
 from MinecraftInfo.Util.JsonQueries import GetDatabaseLocation
 from contextlib import closing
 from datetime import datetime
+
+from MinecraftInfo.Util.Logging import LogError
 
 
 DATABASE_LOCATION = GetDatabaseLocation()
 
 
-def GetAllUsers() -> list(str):
+def GetAllUsers() -> list:
     Users = [""]
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -18,14 +21,14 @@ def GetAllUsers() -> list(str):
             for i in rows:
                 Users.append(i[0])
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return Users
 
 
-def GetAllItems() -> list(str):
+def GetAllItems() -> list:
     Items = [""]
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -36,14 +39,14 @@ def GetAllItems() -> list(str):
             for i in rows:
                 Items.append(i[0].strip("[").strip("]"))
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return Items
 
 
-def GetAllAchievements() -> list(str):
+def GetAllAchievements() -> list:
     Achievements = [""]
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -54,14 +57,14 @@ def GetAllAchievements() -> list(str):
             for i in rows:
                 Achievements.append(i[0])
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return Achievements
 
 
-def GetAllRoles() -> list(str):
+def GetAllRoles() -> list:
     Roles = [""]
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -72,14 +75,14 @@ def GetAllRoles() -> list(str):
             for i in rows:
                 Roles.append(i[0])
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return Roles
 
 
-def GetTopUserMessagesCount() -> list(str, int):
+def GetTopUserMessagesCount() -> list:
     MessagesSent = ["", ""]
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -88,14 +91,14 @@ def GetTopUserMessagesCount() -> list(str, int):
             rows = cursor.fetchall()
             MessagesSent = [rows[0][0], rows[0][1]]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return MessagesSent
 
 
-def GetTopUserTotalPlayTime() -> list(str, int):
+def GetTopUserTotalPlayTime() -> list:
     Playtime = ["", ""]
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -104,14 +107,14 @@ def GetTopUserTotalPlayTime() -> list(str, int):
             rows = cursor.fetchall()
             Playtime = [rows[0][0], rows[0][1]]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return Playtime
 
 
-def GetTopUserKiller() -> list(str, int):
+def GetTopUserKiller() -> list:
     Kills = ["", ""]
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -122,14 +125,14 @@ def GetTopUserKiller() -> list(str, int):
             rows = cursor.fetchall()
             Kills = [rows[0][0], rows[0][1]]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return Kills
 
 
-def GetTopUserDeaths() -> list(str, int):
+def GetTopUserDeaths() -> list:
     Deaths = ["", ""]
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -140,14 +143,14 @@ def GetTopUserDeaths() -> list(str, int):
             rows = cursor.fetchall()
             Deaths = [rows[0][0], rows[0][1]]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return Deaths
 
 
-def GetTopUserAchievementCount() -> list(str, int):
+def GetTopUserAchievementCount() -> list:
     TopUserAchievement = ["", ""]
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -158,14 +161,14 @@ def GetTopUserAchievementCount() -> list(str, int):
             rows = cursor.fetchall()
             TopUserAchievement = [rows[0][0], rows[0][1]]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return TopUserAchievement
 
 
-def GetTopAchievementCount() -> list(str, int):
+def GetTopAchievementCount() -> list:
     TopAchievement = ["", ""]
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -176,14 +179,14 @@ def GetTopAchievementCount() -> list(str, int):
             rows = cursor.fetchall()
             TopAchievement = [rows[0][0], rows[0][1]]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return TopAchievement
 
 
-def GetTopUserRole() -> list(str, int):
+def GetTopUserRole() -> list:
     Role = ["", ""]
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -194,14 +197,14 @@ def GetTopUserRole() -> list(str, int):
             rows = cursor.fetchall()
             Role = [rows[0][0], rows[0][1]]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return Role
 
 
-def GetTopItem() -> list(str, int):
+def GetTopItem() -> list:
     Item = ["", ""]
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -212,7 +215,7 @@ def GetTopItem() -> list(str, int):
             rows = cursor.fetchall()
             Item = [rows[0][0], rows[0][1]]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -228,7 +231,7 @@ def GetUsername(username: str) -> str:
             rows = cursor.fetchall()
             User = rows[0][0]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -249,7 +252,7 @@ def GetUserMessageCount(user: str) -> int:
             rows = cursor.fetchall()
             MessagesSent = rows[0][0]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -267,14 +270,14 @@ def GetUserTotalPlayTime(user: str):
             rows = cursor.fetchall()
             Playtime = rows[0][0]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return Playtime
 
 
-def GetUserCurrentPlayTime(user: str) -> tuple(int, int):
+def GetUserCurrentPlayTime(user: str) -> tuple:
     LoginTime = 0
     LastSeenOnline = 0
     try:
@@ -287,7 +290,7 @@ def GetUserCurrentPlayTime(user: str) -> tuple(int, int):
             rows = cursor.fetchall()
             LoginTime, LastSeenOnline = int(rows[0][0]), int(rows[0][1])
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -306,7 +309,7 @@ def GetUserMurderCount(user: str) -> int:
             rows = cursor.fetchall()
             Kills = rows[0][0]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -325,7 +328,7 @@ def GetUserDeathCount(user: str) -> str:
             rows = cursor.fetchall()
             Deaths = rows[0][0]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -341,7 +344,7 @@ def GetUserRole(user: str) -> str:
             rows = cursor.fetchall()
             Role = rows[0][0]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -359,14 +362,14 @@ def GetUserNickname(user: str) -> str:
             rows = cursor.fetchall()
             Nickname = rows[0][0]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return Nickname
 
 
-def GetUserAchievementCount(user: str) -> dict(str):
+def GetUserAchievementCount(user: str) -> dict:
     Achievement = 0
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -377,14 +380,14 @@ def GetUserAchievementCount(user: str) -> dict(str):
             rows = cursor.fetchall()
             Achievement = rows[0][0]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return Achievement
 
 
-def GetUserMurderList(user: str) -> dict(str):
+def GetUserMurderList(user: str) -> dict:
     KillList = []
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -406,14 +409,14 @@ def GetUserMurderList(user: str) -> dict(str):
                     ]
                 )
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return KillList
 
 
-def GetUserDeathList(user: str) -> dict(str):
+def GetUserDeathList(user: str) -> dict:
     DeathList = []
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -435,14 +438,14 @@ def GetUserDeathList(user: str) -> dict(str):
                     ]
                 )
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return DeathList
 
 
-def GetUserAchievementList(user: str) -> dict(str):
+def GetUserAchievementList(user: str) -> dict:
     AchievementList = []
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -463,7 +466,7 @@ def GetUserAchievementList(user: str) -> dict(str):
                     ]
                 )
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -481,7 +484,7 @@ def GetItem(itemInput: str) -> str:
             rows = cursor.fetchall()
             Item = rows[0][0]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -491,7 +494,7 @@ def GetItem(itemInput: str) -> str:
             return Item
 
 
-def GetItemMurderList(item: str) -> list(str):
+def GetItemMurderList(item: str) -> list:
     KillList = []
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -509,14 +512,14 @@ def GetItemMurderList(item: str) -> list(str):
                 )
 
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return KillList
 
 
-def GetAchievementList(achievement: str) -> list(str):
+def GetAchievementList(achievement: str) -> list:
     AchievementList = []
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -531,7 +534,7 @@ def GetAchievementList(achievement: str) -> list(str):
                     ["<a href=/player?search=" + i[0] + ">" + i[0] + "</a>"]
                 )
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -541,7 +544,7 @@ def GetAchievementList(achievement: str) -> list(str):
             return AchievementList
 
 
-def GetRoleList(role: str) -> list(str):
+def GetRoleList(role: str) -> list:
     RoleList = []
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -553,7 +556,7 @@ def GetRoleList(role: str) -> list(str):
                     ["<a href=/player?search=" + i[0] + ">" + i[0] + "</a>"]
                 )
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -574,7 +577,7 @@ def AddUser(username: str) -> None:
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -589,7 +592,7 @@ def AddItem(item: str) -> None:
             cursor.execute("INSERT or IGNORE INTO Items VALUES (?)", (item,))
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -604,7 +607,7 @@ def AddRole(role: str) -> None:
             cursor.execute("INSERT or IGNORE INTO Roles VALUES (?)", (role,))
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -626,7 +629,7 @@ def AddRoleLink(username: str, role: str) -> None:
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -662,7 +665,7 @@ def AddDeath(
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -679,13 +682,13 @@ def AddDeathMessage(deathMessage: str) -> None:
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
 
 
-def GetDeathMessages() -> dict(int, str):
+def GetDeathMessages() -> dict:
     DeathMessages = {}
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -696,7 +699,7 @@ def GetDeathMessages() -> dict(int, str):
             for index, DeathMessage in enumerate(DeathsMessages):
                 DeathMessages[index] = DeathMessage[0]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
         DeathMessages = {}
     finally:
         if sqliteConnection:
@@ -704,7 +707,7 @@ def GetDeathMessages() -> dict(int, str):
         return DeathMessages
 
 
-def GetAchievementMessages() -> dict(int, str):
+def GetAchievementMessages() -> dict:
     AchievementMessages = {}
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -714,14 +717,14 @@ def GetAchievementMessages() -> dict(int, str):
             for index, AchievementMessage in enumerate(AchievementMessagesSQL):
                 AchievementMessages[index] = AchievementMessage[0]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
         return AchievementMessages
 
 
-def GetConnectionMessages() -> dict(int, str):
+def GetConnectionMessages() -> dict:
     ConnectionMessages = {}
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -732,7 +735,7 @@ def GetConnectionMessages() -> dict(int, str):
             for index, ConnectionMessage in enumerate(ConnectionEventMessages):
                 ConnectionMessages[index] = ConnectionMessage[0]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
         ConnectionMessages = {}
     finally:
         if sqliteConnection:
@@ -740,7 +743,7 @@ def GetConnectionMessages() -> dict(int, str):
         return ConnectionMessages
 
 
-def GetNicknameLinks() -> dict(int, list(str, str)):
+def GetNicknameLinks() -> dict:
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
         with closing(sqliteConnection.cursor()) as cursor:
@@ -750,7 +753,7 @@ def GetNicknameLinks() -> dict(int, list(str, str)):
             for index, NicknameLink in enumerate(NicknameLinks):
                 NicknameLinksDict[index] = [NicknameLink[0], NicknameLink[1]]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
         NicknameLinksDict = {}
     finally:
         if sqliteConnection:
@@ -772,7 +775,7 @@ def UpdateUserLastSeen(user: str, timestamp: datetime) -> None:
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -789,7 +792,7 @@ def SetUserOffline(user: str) -> None:
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -831,14 +834,14 @@ def UpdateUserTotalPlayTime(user: str) -> None:
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
     SetUserOffline(user)
 
 
-def GetOnlinePlayers() -> list(str):
+def GetOnlinePlayers() -> list:
     OnlinePlayers = []
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -850,7 +853,7 @@ def GetOnlinePlayers() -> list(str):
             for Account in OnlinePlayersSQL:
                 OnlinePlayers.append(Account[0])
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -875,7 +878,7 @@ def GetOnlineStatus(user: str) -> None:
             else:
                 OnlineStatus = False
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -898,7 +901,7 @@ def UpdateLoginTime(user: str, timestamp: datetime) -> None:
                 )
                 sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -915,7 +918,7 @@ def UpdateUsername(oldUsername: str, newUsername: str) -> None:
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -935,7 +938,7 @@ def AddNickname(username: str, nickname: str) -> None:
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -952,7 +955,7 @@ def LogUnknownEvent(unknownEvent: str) -> None:
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -973,7 +976,7 @@ def GetExistingNicknameLink(nickname: str) -> str:
             for Account in NicknameLink:
                 Link = Account[0]
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
         Link = None
     finally:
         if sqliteConnection:
@@ -981,7 +984,7 @@ def GetExistingNicknameLink(nickname: str) -> str:
         return Link
 
 
-def GetMessageReviewedIDs() -> list(int):
+def GetMessageReviewedIDs() -> list:
     MessageIDs = []
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -992,7 +995,7 @@ def GetMessageReviewedIDs() -> list(int):
             for IDs in MessageIDsSQL:
                 MessageIDs.append(IDs[0])
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -1010,7 +1013,7 @@ def InsertMessageReviewedIDs(messageIDs: list) -> None:
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -1026,7 +1029,7 @@ def InsertMessageReviewedID(messageID: int) -> None:
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -1042,7 +1045,7 @@ def DeleteMessageReviewedID(messageID: int) -> None:
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -1059,7 +1062,7 @@ def AddAchievement(achievement: str) -> None:
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -1079,7 +1082,7 @@ def AddAchievementLink(username: str, achievement: str) -> None:
             )
             sqliteConnection.commit()
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
@@ -1108,7 +1111,7 @@ def UpdateUserMessageCount(user: str, messageCount: int) -> None:
             sqliteConnection.commit()
 
     except sqlite3.Error as error:
-        print("Log", error)
+        LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()

@@ -33,7 +33,7 @@ def UpdatePlayerMessages(
         sqlQueryHandler.QueueQuery(UpdateUserMessageCount, User, MessageCount[User])
 
 
-def GetMessage(message: json) -> tuple(str, str):
+def GetMessage(message: json) -> tuple:
     TypeStringRegex = "(.*) » (.*)"
     match = re.search(TypeStringRegex, message)
     Username = match.group(1)

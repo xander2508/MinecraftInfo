@@ -80,7 +80,7 @@ def LogDeathMessageEvent(
         )
 
 
-def GetDeathMessage(deathMessage: str) -> tuple(str, object):
+def GetDeathMessage(deathMessage: str) -> tuple:
     """From the death message string extract the information groups.
 
     Args:
