@@ -25,3 +25,17 @@ def LoadWebJsonFile(urlPath: str) -> json:
         DataSource = json.loads(json.dumps([{}]))
     finally:
         return DataSource
+
+
+def GetUserModel(user: str) -> str:
+    API_URL = "https://api.mojang.com/profiles/minecraft"
+    Render_URL = "https://crafatar.com/renders/body/"
+    Headers = {"Content-Type": "application/json"}
+
+    Session = requests.Session()
+    Response = Session.post(API_URL, headers=Headers, data='"' + user + '"')
+    try:
+        ID = json.loads(Response.text)[0]["id"]
+    except:
+        return ""
+    return '<img src="' + Render_URL + ID + '?overlay=true"><br>'

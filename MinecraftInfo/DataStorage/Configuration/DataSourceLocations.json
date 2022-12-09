@@ -6,5 +6,8 @@
         }
     },
     "UsernameURL": "http://104.238.222.67:2096/up/world/newrathnir/",
-    "DatabaseLocation": "MinecraftInfo\\DataStorage\\DataStorage.db"
+    "ClaimURL": "http://104.238.222.67:2096/tiles/_markers_/marker_newrathnir.json",
+    "DatabaseLocation": "MinecraftInfo\\DataStorage\\DataStorage.db",
+    "DatabaseBackupLocation": "MinecraftInfo\\DataStorage\\DataStorageBackup.db",
+    "LogLevel": "WARN"
 }

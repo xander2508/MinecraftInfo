@@ -4,10 +4,503 @@ from MinecraftInfo.Util.JsonQueries import GetDatabaseLocation
 from contextlib import closing
 from datetime import datetime
 
-from MinecraftInfo.Util.Logging import LogError
+from MinecraftInfo.Util.Logging import LogError, LogInfo
 
 
 DATABASE_LOCATION = GetDatabaseLocation()
+
+
+def Top50LargestNationByUsers() -> list:
+    Nations = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT Nation, COUNT(UserCityLink.Name) FROM NationCityLink JOIN UserCityLink ON NationCityLink.City=UserCityLink.City GROUP BY Nation ORDER BY COUNT(UserCityLink.Name) DESC LIMIT 50"
+            )
+            rows = cursor.fetchall()
+            for index, i in enumerate(rows):
+                Nations.append(
+                    [
+                        str(index + 1),
+                        "<a href=/nation?search=" + str(i[0]) + ">" + i[0] + "</a>",
+                        str(i[1]),
+                    ]
+                )
+
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Nations
+
+
+def GetNationInfo(nation: str) -> tuple:
+    NationLevel, CaptialCoords, Captial, NationChunks, NationPlayers, NationClaims = (
+        "",
+        "",
+        "",
+        0,
+        0,
+        [],
+    )
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("SELECT Level FROM Nations WHERE Name = (?)", (nation,))
+            rows = cursor.fetchall()
+            for i in rows:
+                NationLevel = i[0]
+
+            cursor.execute("SELECT Capital FROM Nations WHERE Name = (?)", (nation,))
+            rows = cursor.fetchall()
+            for i in rows:
+                CapitalName = i[0]
+                Captial = "<a href=/claim?search=" + str(i[0]) + ">" + i[0] + "</a>"
+
+            cursor.execute("SELECT Coord FROM Cities WHERE Name = (?)", (CapitalName,))
+            rows = cursor.fetchall()
+            for i in rows:
+                CaptialCoords = i[0]
+
+            cursor.execute(
+                "SELECT COUNT(UserCityLink.Name) FROM NationCityLink JOIN UserCityLink ON NationCityLink.City=UserCityLink.City WHERE Nation = (?) GROUP BY Nation",
+                (nation,),
+            )
+            rows = cursor.fetchall()
+            for i in rows:
+                NationPlayers = str(i[0])
+
+            cursor.execute(
+                "SELECT Nation, SUM(Cities.Chunks) FROM NationCityLink JOIN Cities ON NationCityLink.City=Cities.Name WHERE Nation = (?) GROUP BY Nation ORDER BY SUM(Cities.Chunks)",
+                (nation,),
+            )
+            rows = cursor.fetchall()
+            for i in rows:
+                NationChunks = str(i[0])
+
+            cursor.execute(
+                "SELECT NationCityLink.City, (SELECT COUNT(UserCityLink.Name) FROM UserCityLink WHERE UserCityLink.City=NationCityLink.City) FROM NationCityLink WHERE Nation = (?) ORDER BY (SELECT COUNT(UserCityLink.Name) FROM UserCityLink WHERE UserCityLink.City=NationCityLink.City) DESC",
+                (nation,),
+            )
+            rows = cursor.fetchall()
+            for i in rows:
+                NationClaims.append(
+                    [
+                        "<a href=/claim?search=" + str(i[0]) + ">" + i[0] + "</a>",
+                        str(i[1]),
+                    ]
+                )
+
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return (
+            NationLevel,
+            CaptialCoords,
+            Captial,
+            NationChunks,
+            NationPlayers,
+            NationClaims,
+        )
+
+
+def Top50LargestClaimByUsers() -> list:
+    Claims = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT City, COUNT(Name) FROM UserCityLink GROUP BY City ORDER BY COUNT(Name) DESC LIMIT 50"
+            )
+            rows = cursor.fetchall()
+            for index, i in enumerate(rows):
+                Claims.append(
+                    [
+                        str(index + 1),
+                        "<a href=/claim?search=" + str(i[0]) + ">" + i[0] + "</a>",
+                        str(i[1]),
+                    ]
+                )
+
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Claims
+
+
+def GetClaimInfo(claim: str) -> tuple:
+    ClaimLevel, ClaimCoords, ClaimChunks, ClaimNation, UserList = "", "", "", "None", []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT Level, Coord, Chunks FROM Cities WHERE Name = (?)", (claim,)
+            )
+            rows = cursor.fetchall()
+            for i in rows:
+                ClaimLevel, ClaimCoords, ClaimChunks = i[0], i[1], i[2]
+
+            cursor.execute(
+                "SELECT Nation FROM NationCityLink WHERE City = (?)", (claim,)
+            )
+            rows = cursor.fetchall()
+            for i in rows:
+                ClaimNation = i[0]
+
+            cursor.execute("SELECT Name FROM UserCityLink WHERE City = (?)", (claim,))
+            rows = cursor.fetchall()
+            for i in rows:
+                UserList.append(
+                    ["<a href=/player?search=" + i[0] + ">" + i[0] + "</a>"]
+                )
+
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return ClaimLevel, ClaimCoords, ClaimChunks, ClaimNation, UserList
+
+
+def GetLargestNationByClaims() -> list:
+    Nation = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT Nation, COUNT(City) FROM NationCityLink GROUP BY Nation ORDER BY COUNT(City) DESC LIMIT 1"
+            )
+            rows = cursor.fetchall()
+            for i in rows:
+                Nation = [
+                    "<a href=/claim?search=" + str(i[0]) + ">" + i[0] + "</a>",
+                    str(i[1]),
+                ]
+
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Nation
+
+
+def GetLargestNationByUsers() -> list:
+    Nation = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT Nation, COUNT(UserCityLink.Name) FROM NationCityLink JOIN UserCityLink ON NationCityLink.City=UserCityLink.City GROUP BY Nation ORDER BY COUNT(UserCityLink.Name) DESC LIMIT 1"
+            )
+            rows = cursor.fetchall()
+            for i in rows:
+                Nation = [
+                    "<a href=/nation?search=" + str(i[0]) + ">" + i[0] + "</a>",
+                    str(i[1]),
+                ]
+
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Nation
+
+
+def GetLargestNationByChunks() -> list:
+    Nation = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT Nation, SUM(Cities.Chunks) FROM NationCityLink JOIN Cities ON NationCityLink.City=Cities.Name GROUP BY Nation ORDER BY SUM(Cities.Chunks) DESC LIMIT 1"
+            )
+            rows = cursor.fetchall()
+            for i in rows:
+                Nation = [
+                    "<a href=/nation?search=" + str(i[0]) + ">" + i[0] + "</a>",
+                    str(i[1]),
+                ]
+
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Nation
+
+
+def GetLargestClaimByUsers() -> list:
+    Claim = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT City,COUNT(Name) FROM UserCityLink GROUP BY City ORDER BY COUNT(Name) DESC LIMIT 1"
+            )
+            rows = cursor.fetchall()
+            for i in rows:
+                Claim = [
+                    "<a href=/claim?search=" + str(i[0]) + ">" + i[0] + "</a>",
+                    str(i[1]),
+                ]
+
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Claim
+
+
+def GetLargestClaimByChunks() -> list:
+    Claim = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT Name, Chunks FROM Cities ORDER BY Chunks DESC LIMIT 1"
+            )
+            rows = cursor.fetchall()
+            for i in rows:
+                Claim = [
+                    "<a href=/claim?search=" + str(i[0]) + ">" + i[0] + "</a>",
+                    str(i[1]),
+                ]
+
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Claim
+
+
+def GetAllNations() -> list:
+    Nations = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("SELECT Name FROM Nations")
+            rows = cursor.fetchall()
+            for i in rows:
+                Nations.append(i[0])
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Nations
+
+
+def GetAllClaims() -> list:
+    Claims = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("SELECT Name FROM Cities")
+            rows = cursor.fetchall()
+            for i in rows:
+                Claims.append(i[0])
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Claims
+
+
+def GetClaimNation(claim: str) -> list:
+    Nation = "None"
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT Nation FROM NationCityLink WHERE City=(?) LIMIT 1", (claim,)
+            )
+            rows = cursor.fetchall()
+            for i in rows:
+                Nation = "<a href=/nation?search=" + str(i[0]) + ">" + i[0] + "</a>"
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Nation
+
+
+def GetUserClaimList(user: str) -> list:
+    Claims = [""]
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            Claims = []
+            cursor.execute("SELECT City FROM UserCityLink WHERE Name=(?)", (user,))
+            rows = cursor.fetchall()
+            for i in rows:
+                Claims.append(i[0])
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Claims
+
+
+def GetUserNicknameList(user: str) -> list:
+    Nicknames = [""]
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            Nicknames = []
+            cursor.execute("SELECT Nickname FROM NicknameLinks WHERE Name=(?)", (user,))
+            rows = cursor.fetchall()
+            for i in rows:
+                Nicknames.append([i[0]])
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Nicknames
+
+
+def GetUserRoleList(user: str) -> list:
+    Roles = [""]
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            Roles = []
+            cursor.execute("SELECT Role FROM RoleLinks WHERE User=(?)", (user,))
+            rows = cursor.fetchall()
+            for i in rows:
+                Roles.append(
+                    ["<a href=/role?search=" + str(i[0]) + ">" + i[0] + "</a>"]
+                )
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Roles
+
+
+def GetTop50Roles():
+    Roles = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT Role,COUNT(Role) FROM RoleLinks WHERE NOT Role = 'None' GROUP BY Role ORDER BY COUNT(Role) DESC LIMIT 50"
+            )
+            rows = cursor.fetchall()
+            for index, i in enumerate(rows):
+                Roles.append(
+                    [
+                        str(index + 1),
+                        "<a href=/role?search=" + str(i[0]) + ">" + i[0] + "</a>",
+                        str(i[1]),
+                    ]
+                )
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Roles
+
+
+def GetTop50Achievement():
+    Achievements = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            Users = []
+            cursor.execute(
+                "SELECT Achievement,COUNT(Achievement) FROM AchievementLinks GROUP BY Achievement ORDER BY COUNT(Achievement) DESC LIMIT 50"
+            )
+            rows = cursor.fetchall()
+            for index, i in enumerate(rows):
+                Achievements.append(
+                    [
+                        str(index + 1),
+                        "<a href=/achievement?search="
+                        + str(i[0].replace(" ", "+"))
+                        + ">"
+                        + i[0]
+                        + "</a>",
+                        str(i[1]),
+                    ]
+                )
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Achievements
+
+
+def GetTop50Items():
+    Items = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            Users = []
+            cursor.execute(
+                "SELECT ItemUsed,COUNT(ItemUsed) FROM Deaths WHERE NOT ItemUsed = 'None' GROUP BY ItemUsed ORDER BY COUNT(ItemUsed) DESC LIMIT 50"
+            )
+            rows = cursor.fetchall()
+            for index, i in enumerate(rows):
+                Items.append(
+                    [
+                        str(index + 1),
+                        "<a href=/item?search="
+                        + str(i[0]).replace(" ", "+").strip("[").strip("]")
+                        + ">"
+                        + i[0].strip("[").strip("]")
+                        + "</a>",
+                        str(i[1]),
+                    ]
+                )
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Items
+
+
+def GetTop50UserTotalPlayTime():
+    PlaytimeList = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            Users = []
+            cursor.execute(
+                "SELECT Name,TotalPlayTime FROM Users GROUP BY TotalPlayTime ORDER BY TotalPlayTime DESC LIMIT 50"
+            )
+            rows = cursor.fetchall()
+            for index, i in enumerate(rows):
+                PlaytimeList.append(
+                    [
+                        str(index + 1),
+                        "<a href=/player?search=" + i[0] + ">" + i[0] + "</a>",
+                        str(float("{:.2f}".format(i[1] / 3600000))) + " Hours",
+                    ]
+                )
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return PlaytimeList
 
 
 def GetAllUsers() -> list:
@@ -340,7 +833,9 @@ def GetUserRole(user: str) -> str:
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
         with closing(sqliteConnection.cursor()) as cursor:
-            cursor.execute("SELECT Role FROM RoleLinks WHERE User=(?) LIMIT 1", (user,))
+            cursor.execute(
+                "SELECT CurrentRole FROM Users WHERE User=(?) LIMIT 1", (user,)
+            )
             rows = cursor.fetchall()
             Role = rows[0][0]
     except sqlite3.Error as error:
@@ -357,7 +852,7 @@ def GetUserNickname(user: str) -> str:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
-                "SELECT Nickname FROM NicknameLinks WHERE Name=(?) LIMIT 1", (user,)
+                "SELECT CurrentNickname FROM Users WHERE Name=(?) LIMIT 1", (user,)
             )
             rows = cursor.fetchall()
             Nickname = rows[0][0]
@@ -531,7 +1026,13 @@ def GetAchievementList(achievement: str) -> list:
             rows = cursor.fetchall()
             for i in rows:
                 AchievementList.append(
-                    ["<a href=/player?search=" + i[0] + ">" + i[0] + "</a>"]
+                    [
+                        "<a href=/player?search="
+                        + i[0].replace(" ", "+")
+                        + ">"
+                        + i[0]
+                        + "</a>"
+                    ]
                 )
     except sqlite3.Error as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)
@@ -564,6 +1065,112 @@ def GetRoleList(role: str) -> list:
             return False
         else:
             return RoleList
+
+
+def LinkCityUsers(player: str, cityName: str) -> None:
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute(
+                "INSERT or IGNORE INTO UserCityLink('Name','City') VALUES (?,?)",
+                (
+                    player,
+                    cityName,
+                ),
+            )
+            sqliteConnection.commit()
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+
+
+def ClearClaimDatabase() -> None:
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute("DELETE FROM UserCityLink")
+            cursor.execute("DELETE FROM NationCityLink")
+            cursor.execute("DELETE FROM Cities")
+            cursor.execute("DELETE FROM Nations")
+            sqliteConnection.commit()
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+
+
+def LinkNationCity(nationName: str, cityName: str):
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute(
+                "INSERT or IGNORE INTO NationCityLink('Nation','City') VALUES (?,?)",
+                (
+                    nationName,
+                    cityName,
+                ),
+            )
+            sqliteConnection.commit()
+    except sqlite3.Error as error:
+        LogInfo(
+            str(error) + " - Claim most likely cannot be found. Error with dynmap.",
+            __name__,
+            sys._getframe().f_code.co_name,
+        )
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+
+
+def AddNationClaim(nationName: str, nationLevel: str, nationCapital: str) -> None:
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute(
+                "INSERT or IGNORE INTO Nations('Name','Level','Capital') VALUES (?,?,?)",
+                (
+                    nationName,
+                    nationLevel,
+                    nationCapital,
+                ),
+            )
+            sqliteConnection.commit()
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+
+
+def AddCityClaim(
+    cityName: str, cityLevel: str, cityChunks: int, XCoord: int, ZCoord: int
+) -> None:
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute(
+                "INSERT or IGNORE INTO Cities('Name','Level','Chunks', 'Coord') VALUES (?,?,?,?)",
+                (
+                    cityName,
+                    cityLevel,
+                    int(cityChunks),
+                    str(XCoord) + ", " + str(ZCoord),
+                ),
+            )
+            sqliteConnection.commit()
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
 
 
 def AddUser(username: str) -> None:
@@ -814,6 +1421,8 @@ def UpdateUserTotalPlayTime(user: str) -> None:
 
             if LoginTime != 0:
                 PlayTime = LastSeenOnline - LoginTime
+                if PlayTime >= 3600000:  # One HR
+                    PlayTime = 0
             else:
                 PlayTime = 0
 
@@ -944,6 +1553,46 @@ def AddNickname(username: str, nickname: str) -> None:
             sqliteConnection.close()
 
 
+def AddCurrentNickname(username: str, nickname: str) -> None:
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute(
+                "UPDATE Users SET CurrentNickname = (?) WHERE Name = (?)",
+                (
+                    username,
+                    nickname,
+                ),
+            )
+            sqliteConnection.commit()
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+
+
+def AddCurrentRole(username: str, role: str) -> None:
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute(
+                "UPDATE Users SET CurrentRole = (?) WHERE Name = (?)",
+                (
+                    username,
+                    role,
+                ),
+            )
+            sqliteConnection.commit()
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+
+
 def LogUnknownEvent(unknownEvent: str) -> None:
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
@@ -1036,6 +1685,10 @@ def InsertMessageReviewedID(messageID: int) -> None:
 
 
 def DeleteMessageReviewedID(messageID: int) -> None:
+    try:
+        messageID = int(messageID)
+    except:
+        messageID = 0
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
         with closing(sqliteConnection.cursor()) as cursor:

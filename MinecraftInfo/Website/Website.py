@@ -4,16 +4,31 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
+from MinecraftInfo.Util.FileOpener import GetUserModel
 
 from MinecraftInfo.Util.SqlQueries import (
     GetAchievementList,
     GetAllAchievements,
+    GetAllClaims,
     GetAllItems,
+    GetAllNations,
     GetAllRoles,
     GetAllUsers,
+    GetClaimInfo,
+    GetClaimNation,
     GetItem,
     GetItemMurderList,
+    GetLargestClaimByChunks,
+    GetLargestClaimByUsers,
+    GetLargestNationByChunks,
+    GetLargestNationByClaims,
+    GetLargestNationByUsers,
+    GetNationInfo,
     GetRoleList,
+    GetTop50Achievement,
+    GetTop50Items,
+    GetTop50Roles,
+    GetTop50UserTotalPlayTime,
     GetTopAchievementCount,
     GetTopItem,
     GetTopUserAchievementCount,
@@ -30,10 +45,15 @@ from MinecraftInfo.Util.SqlQueries import (
     GetUserMessageCount,
     GetUserMurderCount,
     GetUserMurderList,
+    GetUserNicknameList,
+    GetUserRoleList,
     GetUsername,
     GetUserNickname,
     GetUserRole,
     GetUserTotalPlayTime,
+    GetUserClaimList,
+    Top50LargestClaimByUsers,
+    Top50LargestNationByUsers,
 )
 
 app = Flask(__name__)
@@ -69,11 +89,15 @@ def Index() -> object:
     TopAchievement = GetTopAchievementCount()
     Role = GetTopUserRole()
     Item = GetTopItem()
-
+    LargestClaimChunks = GetLargestClaimByChunks()
+    LargestClaimUsers = GetLargestClaimByUsers()
+    LargestNationChunks = GetLargestNationByChunks()
+    LargestNationUsers = GetLargestNationByUsers()
+    LargestNationClaims = GetLargestNationByClaims()
     Table = {
         "1": {
             "Title": "Top Statistics",
-            "Headers": ["Catagory", "Username", "Metric"],
+            "Headers": ["Catagory", "Name", "Metric"],
             "Body": [
                 [
                     "Most Messages Sent",
@@ -139,6 +163,27 @@ def Index() -> object:
                     + "</a>",
                     Item[1],
                 ],
+                [
+                    "Largest Claim (Chunks)",
+                    LargestClaimChunks[0],
+                    LargestClaimChunks[1],
+                ],
+                ["Largest Claim (Users)", LargestClaimUsers[0], LargestClaimUsers[1]],
+                [
+                    "Largest Nation (Chunks)",
+                    LargestNationChunks[0],
+                    LargestNationChunks[1],
+                ],
+                [
+                    "Largest Nation (Users)",
+                    LargestNationUsers[0],
+                    LargestNationUsers[1],
+                ],
+                [
+                    "Largest Nation (Claims)",
+                    LargestNationClaims[0],
+                    LargestNationClaims[1],
+                ],
             ],
         }
     }
@@ -146,11 +191,10 @@ def Index() -> object:
     return render_template(
         "index.html",
         title="Home",
-        usernames=Users,
-        items=Items,
-        achievements=Achievements,
-        roles=Roles,
+        list=Users,
+        searchbox="Search Users...",
         Table=Table,
+        uri="player",
     )
 
 
@@ -163,7 +207,6 @@ def SearchPlayer() -> object:
     """
     player = request.args.get("search")
     Users, Items, Achievements, Roles = GetAutocompleteLists()
-
     if User := GetUsername(player):
         MessagesSent = GetUserMessageCount(User)
         Playtime = GetUserTotalPlayTime(User)
@@ -176,11 +219,29 @@ def SearchPlayer() -> object:
         KillList = GetUserMurderList(User)
         DeathList = GetUserDeathList(User)
         AchievementList = GetUserAchievementList(User)
+        NicknameList = GetUserNicknameList(User)
+        RoleList = GetUserRoleList(User)
+        ClaimList = GetUserClaimList(User)
+
+        ClaimNationList = []
+        if len(ClaimList) > 0:
+            for claim in ClaimList:
+                Nation = GetClaimNation(claim)
+                ClaimNationList.append(
+                    [
+                        "<a href=/claim?search=" + str(claim) + ">" + claim + "</a>",
+                        Nation,
+                    ]
+                )
 
         LoginTimeIcon = "🔴"
         CurrentPlaytime = 0
+        CurrentPlaytimeInt = 0
         if LoginTime:
-            CurrentPlaytime = LastSeenOnline - LoginTime
+            CurrentPlaytimeInt = LastSeenOnline - LoginTime
+            CurrentPlaytime = (
+                str(float("{:.2f}".format(CurrentPlaytimeInt / 3600000))) + " Hours"
+            )
             LoginTimeIcon = "🟢"
 
         if Nickname == User:
@@ -194,7 +255,14 @@ def SearchPlayer() -> object:
                     ["Messages Sent", MessagesSent],
                     [
                         "Playtime",
-                        str(float("{:.2f}".format(Playtime / 3600000))) + " Hours",
+                        str(
+                            float(
+                                "{:.2f}".format(
+                                    (Playtime + CurrentPlaytimeInt) / 3600000
+                                )
+                            )
+                        )
+                        + " Hours",
                     ],
                     ["Kill Count", Kills],
                     ["Death Count", Deaths],
@@ -211,58 +279,83 @@ def SearchPlayer() -> object:
                     ["Online", LoginTimeIcon],
                     ["Current Playtime", CurrentPlaytime],
                 ],
-            },
-            "2": {
+            }
+        }
+        if len(ClaimList) > 0:
+            Table["7"] = {
+                "Title": "Member Claims",
+                "Headers": ["Claim", "Nation"],
+                "Body": ClaimNationList,
+            }
+        if len(KillList) > 0:
+            Table["2"] = {
                 "Title": "Users Murdered",
                 "Headers": ["User Killed", "Weapon"],
                 "Body": KillList,
-            },
-            "3": {
+            }
+
+        if len(DeathList) > 0:
+            Table["3"] = {
                 "Title": "Users Been Murdred By",
                 "Headers": ["User Killed By", "Weapon"],
                 "Body": DeathList,
-            },
-            "4": {
+            }
+        if len(AchievementList) > 0:
+            Table["4"] = {
                 "Title": "Achievement List",
                 "Headers": ["Achievement"],
                 "Body": AchievementList,
-            },
-        }
+            }
+
+        if len(NicknameList) > 0:
+            Table["5"] = {
+                "Title": "Nickname List",
+                "Headers": ["Nickname"],
+                "Body": NicknameList,
+            }
+        if len(RoleList) > 0:
+            Table["6"] = {
+                "Title": "Role List",
+                "Headers": ["Role"],
+                "Body": RoleList,
+            }
+
+        UserModel = GetUserModel(User)
 
         return render_template(
             "index.html",
-            title=User,
+            title=UserModel + User,
             Table=Table,
-            usernames=Users,
-            items=Items,
-            achievements=Achievements,
-            roles=Roles,
+            searchbox="Search Users...",
+            list=Users,
+            uri="player",
         )
 
     else:
+        PlayTimeList = GetTop50UserTotalPlayTime()
         Table = {
             "1": {
-                "Title": "User Not Found",
-                "Headers": ["Catagory", "Metric"],
+                "Title": "INFO",
+                "Headers": [""],
                 "Body": [
-                    ["Messages Sent", "N/A"],
-                    ["Playtime", "N/A"],
-                    ["Kill Count", "N/A"],
-                    ["Death Count", "N/A"],
-                    ["Achievement Count", "N/A"],
-                    ["Current Role", "N/A"],
-                    ["Current Nickname", "N/A"],
+                    [
+                        "Use the search box at the top of the page to search for a specific user."
+                    ]
                 ],
-            }
+            },
+            "2": {
+                "Title": "Top 50 Playtimes",
+                "Headers": ["Index", "User", "Playtime"],
+                "Body": PlayTimeList,
+            },
         }
         return render_template(
             "index.html",
             title="User Info",
             Table=Table,
-            usernames=Users,
-            items=Items,
-            achievements=Achievements,
-            roles=Roles,
+            searchbox="Search Users...",
+            list=Users,
+            uri="player",
         )
 
 
@@ -274,7 +367,8 @@ def SearchItem() -> object:
         HTML: index.html template with an items statistics
     """
     Item = request.args.get("search")
-    Item = "[" + Item + "]"
+    if Item and Item != "None":
+        Item = "[" + Item + "]"
     Users, Items, Achievements, Roles = GetAutocompleteLists()
 
     if Item := GetItem(Item):
@@ -295,30 +389,37 @@ def SearchItem() -> object:
             "index.html",
             title=Item.strip("[").strip("]"),
             Table=Table,
-            usernames=Users,
-            items=Items,
-            achievements=Achievements,
-            roles=Roles,
+            searchbox="Search Items...",
+            list=Items,
+            uri="item",
         )
 
     else:
+        ItemList = GetTop50Items()
         Table = {
             "1": {
-                "Title": "Item Not Found",
-                "Headers": ["Murderer", "Victim"],
+                "Title": "INFO",
+                "Headers": [""],
                 "Body": [
-                    ["N/A", "N/A"],
+                    [
+                        "Use the search box at the top of the page to search for a specific item."
+                    ]
                 ],
-            }
+            },
+            "2": {
+                "Title": "Top 50 Items",
+                "Headers": ["Index", "Item", "Kills"],
+                "Body": ItemList,
+            },
         }
+
         return render_template(
             "index.html",
             title="Item Info",
             Table=Table,
-            usernames=Users,
-            items=Items,
-            achievements=Achievements,
-            roles=Roles,
+            searchbox="Search Items...",
+            list=Items,
+            uri="item",
         )
 
 
@@ -350,29 +451,35 @@ def SearchAchievement() -> object:
             "index.html",
             title=achievement,
             Table=Table,
-            usernames=Users,
-            items=Items,
-            achievements=Achievements,
-            roles=Roles,
+            searchbox="Search Achievements...",
+            list=Achievements,
+            uri="achievement",
         )
     else:
+        AchievementList = GetTop50Achievement()
         Table = {
             "1": {
-                "Title": "Achievement Not Found",
-                "Headers": ["Users with the Achievement"],
+                "Title": "INFO",
+                "Headers": [""],
                 "Body": [
-                    ["N/A"],
+                    [
+                        "Use the search box at the top of the page to search for a specific achievement."
+                    ]
                 ],
-            }
+            },
+            "2": {
+                "Title": "Top 50 Achievements Earned",
+                "Headers": ["Index", "Achievement", "Count"],
+                "Body": AchievementList,
+            },
         }
         return render_template(
             "index.html",
             title="Achievement Info",
             Table=Table,
-            usernames=Users,
-            items=Items,
-            achievements=Achievements,
-            roles=Roles,
+            searchbox="Search Achievements...",
+            list=Achievements,
+            uri="achievement",
         )
 
 
@@ -390,7 +497,7 @@ def SearchRole() -> object:
             "1": {
                 "Title": "Role Statistics",
                 "Headers": ["Category", "Metric"],
-                "Body": [["Number of users holding achievement", str(len(RoleList))]],
+                "Body": [["Number of users holding role", str(len(RoleList))]],
             },
             "2": {"Title": "Users with Role", "Headers": ["Users"], "Body": RoleList},
         }
@@ -398,30 +505,210 @@ def SearchRole() -> object:
             "index.html",
             title=role,
             Table=Table,
-            usernames=Users,
-            items=Items,
-            achievements=Achievements,
-            roles=Roles,
+            searchbox="Search Roles...",
+            list=Roles,
+            uri="role",
         )
     else:
+        RoleList = GetTop50Roles()
         Table = {
             "1": {
-                "Title": "Role Not Found",
-                "Headers": ["Users with the Role"],
+                "Title": "INFO",
+                "Headers": [""],
                 "Body": [
-                    ["N/A"],
+                    [
+                        "Use the search box at the top of the page to search for a specific role."
+                    ]
                 ],
-            }
+            },
+            "2": {
+                "Title": "Top 50 Roles Used",
+                "Headers": ["Index", "Role", "Count"],
+                "Body": RoleList,
+            },
         }
         return render_template(
             "index.html",
             title="Role Info",
             Table=Table,
-            usernames=Users,
-            items=Items,
-            achievements=Achievements,
-            roles=Roles,
+            searchbox="Search Roles...",
+            list=Roles,
+            uri="role",
         )
+
+
+@app.route("/claim")
+def SearchClaim() -> object:
+    """Search for a claim.
+
+    Returns:
+        HTML: index.html template with claim statistics.
+    """
+    claim = request.args.get("search")
+    Claims = GetAllClaims()
+    ClaimLevel, ClaimCoords, ClaimChunks, ClaimNation, UserList = GetClaimInfo(claim)
+    if ClaimLevel:
+        Table = {
+            "1": {
+                "Title": "Claim Statistics",
+                "Headers": ["Category", "Metric"],
+                "Body": [
+                    ["Level", str(ClaimLevel)],
+                    ["Coords", str(ClaimCoords)],
+                    ["Chunks", str(ClaimChunks)],
+                    ["Nation", str(ClaimNation)],
+                    ["Players", len(UserList)],
+                ],
+            },
+            "2": {
+                "Title": "Users Registered to Claim",
+                "Headers": ["Users"],
+                "Body": UserList,
+            },
+        }
+        return render_template(
+            "index.html",
+            title=claim,
+            Table=Table,
+            searchbox="Search Claims...",
+            list=Claims,
+            uri="claim",
+        )
+    else:
+        ClaimList = Top50LargestClaimByUsers()
+        Table = {
+            "1": {
+                "Title": "INFO",
+                "Headers": [""],
+                "Body": [
+                    [
+                        "Use the search box at the top of the page to search for a specific claim."
+                    ]
+                ],
+            },
+            "2": {
+                "Title": "Top 50 Claims by Users",
+                "Headers": ["Index", "Claim", "Users"],
+                "Body": ClaimList,
+            },
+        }
+        return render_template(
+            "index.html",
+            title="Claim Info",
+            Table=Table,
+            searchbox="Search Claims...",
+            list=Claims,
+            uri="claim",
+        )
+
+
+@app.route("/nation")
+def SearchNation() -> object:
+    """Search for a nation.
+
+    Returns:
+        HTML: index.html template with nation statistics.
+    """
+    nation = request.args.get("search")
+    Nations = GetAllNations()
+    (
+        NationLevel,
+        CaptialCoords,
+        Captial,
+        NationChunks,
+        NationPlayers,
+        NationClaims,
+    ) = GetNationInfo(nation)
+    if NationLevel:
+        Table = {
+            "1": {
+                "Title": "Nation Statistics",
+                "Headers": ["Category", "Metric"],
+                "Body": [
+                    ["Level", str(NationLevel)],
+                    ["Chunks", str(NationChunks)],
+                    ["Players", str(NationPlayers)],
+                    ["Capital", str(Captial)],
+                    ["Capital Coords", str(CaptialCoords)],
+                ],
+            },
+            "2": {
+                "Title": "Claims Registered to the Nation",
+                "Headers": ["Claim", "Users"],
+                "Body": NationClaims,
+            },
+        }
+        return render_template(
+            "index.html",
+            title=nation,
+            Table=Table,
+            searchbox="Search Nations...",
+            list=Nations,
+            uri="nation",
+        )
+    else:
+        NationList = Top50LargestNationByUsers()
+        Table = {
+            "1": {
+                "Title": "INFO",
+                "Headers": [""],
+                "Body": [
+                    [
+                        "Use the search box at the top of the page to search for a specific nation."
+                    ]
+                ],
+            },
+            "2": {
+                "Title": "Top 50 Nations by Users",
+                "Headers": ["Index", "Nation", "Users"],
+                "Body": NationList,
+            },
+        }
+        return render_template(
+            "index.html",
+            title="Nation Info",
+            Table=Table,
+            searchbox="Search Nations...",
+            list=Nations,
+            uri="nation",
+        )
+
+
+@app.route("/info")
+def info() -> object:
+    Users, Items, Achievements, Roles = GetAutocompleteLists()
+
+    Table = {
+        "1": {
+            "Title": "Plz",
+            "Headers": [""],
+            "Body": [
+                [
+                    "This is a personal project and only updates while the website is running. If you try and break it, it will break."
+                ],
+                [
+                    "IF you wish to attempt to break it please message me on discord prior (xander2508#8106) so I can fix it."
+                ],
+                [""],
+                [
+                    "This website is run off a free cloud server and therefore is vulnerable to outages. I will do my best to maintain it but be aware."
+                ],
+                [""],
+                ["WHEN you spot a bug message me on discord (xander2508#8106)."],
+                [""],
+                ["Feel free to donate to xander2508 however much you can."],
+                ["/pay xander2508 1000"],
+            ],
+        }
+    }
+    return render_template(
+        "index.html",
+        title="Info Page",
+        Table=Table,
+        searchbox="Search Players...",
+        list=Users,
+        uri="player",
+    )
 
 
 def RunWebsite():

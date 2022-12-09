@@ -39,6 +39,22 @@ def GetDatabaseLocation() -> str:
         return ""
 
 
+def GetDatabaseBackupLocation() -> str:
+    try:
+        return LoadJsonFile(JSON_LOCATION)["DatabaseBackupLocation"]
+    except Exception as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+        return ""
+
+
+def GetClaimURL() -> str:
+    try:
+        return LoadJsonFile(JSON_LOCATION)["ClaimURL"]
+    except Exception as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+        return ""
+
+
 def GetFullJson() -> json:
     try:
         return LoadJsonFile(JSON_LOCATION)

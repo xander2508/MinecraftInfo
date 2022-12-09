@@ -2,6 +2,7 @@ import json
 import re
 
 from MinecraftInfo.DataParsing.StringParsing.NameParsing import NameParsing
+from MinecraftInfo.Util.Logging import LogError
 from MinecraftInfo.Util.SqlQueries import UpdateUserMessageCount
 
 
@@ -36,6 +37,9 @@ def UpdatePlayerMessages(
 def GetMessage(message: json) -> tuple:
     TypeStringRegex = "(.*) » (.*)"
     match = re.search(TypeStringRegex, message)
-    Username = match.group(1)
-    MessageText = match.group(2)
+    try:
+        Username = match.group(1)
+        MessageText = match.group(2)
+    except:
+        LogError(message, __name__, sys._getframe().f_code.co_name)
     return Username, MessageText

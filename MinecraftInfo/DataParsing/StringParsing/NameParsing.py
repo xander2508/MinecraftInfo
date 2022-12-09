@@ -4,6 +4,8 @@ import sys
 from typing import Callable
 from MinecraftInfo.Util.Logging import LogError
 from MinecraftInfo.Util.SqlQueries import (
+    AddCurrentNickname,
+    AddCurrentRole,
     AddNickname,
     AddRole,
     AddRoleLink,
@@ -47,6 +49,8 @@ def NameParsing(sqlQueryHandler) -> Callable:
         else:
             SqlQueryHandler.QueueQuery(AddUser, PlayerAccount)
             SqlQueryHandler.QueueQuery(AddNickname, PlayerAccount, PlayerName)
+            SqlQueryHandler.QueueQuery(AddCurrentNickname, PlayerAccount, PlayerName)
+
         if len(nameString.split(" ")) > 1:
             Nickname = (" ".join((nameString.split(" ")[:-1]))).strip()
         else:

@@ -4,7 +4,10 @@ import threading
 import time
 from logging import exception
 
+from MinecraftInfo.Util.WebsiteSqlQueries import BackupDatabase
+
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from MinecraftInfo.DataParsing.MapInfo import UpdateClaimInfo
 from MinecraftInfo.Website.Website import RunWebsite
 from MinecraftInfo.DataParsing.MessageValidation import MessagesReviewed
 from MinecraftInfo.DataParsing.PlayerStatistics import PlayerStatistics
@@ -28,9 +31,10 @@ class Main:
         PlayerStatistics(self.DiscordData, self.MessagesValidated, SqlQueryHandler)
 
 
-def DataCollection():
+def DataCollection() -> None:
     MainProgram = Main()
     StartTime = time.time()
+    counter = 0
     while True:
         try:
             MainProgram.UpdateDiscordData()
@@ -41,12 +45,25 @@ def DataCollection():
                 __name__,
                 sys._getframe().f_code.co_name,
             )
+            counter = DelayUpdateClaimInfo(counter)
+            time.sleep(20)
+            BackupDatabase()
         except Exception as e:
             LogError(e, __name__, sys._getframe().f_code.co_name)
         except KeyboardInterrupt as e:
             LogError("KeyboardInterrupt", __name__, sys._getframe().f_code.co_name)
             break
-        time.sleep(20)
+
+
+def DelayUpdateClaimInfo(counter: int) -> int:
+    if counter == 0:
+        UpdateClaimInfo(SqlQueryHandler)
+        counter += 1
+    elif counter >= 1000:
+        counter = 0
+    else:
+        counter += 1
+    return counter
 
 
 if __name__ == "__main__":
