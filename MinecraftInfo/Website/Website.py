@@ -1,12 +1,11 @@
-from flask import Flask, render_template, request
-
 import os
 import sys
 
+from flask import Flask, render_template, request
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 from MinecraftInfo.Util.FileOpener import GetUserModel
-
-from MinecraftInfo.Util.SqlQueries import (
+from MinecraftInfo.Util.WebsiteSqlQueries import (
     GetAchievementList,
     GetAllAchievements,
     GetAllClaims,
@@ -39,19 +38,19 @@ from MinecraftInfo.Util.SqlQueries import (
     GetTopUserTotalPlayTime,
     GetUserAchievementCount,
     GetUserAchievementList,
+    GetUserClaimList,
     GetUserCurrentPlayTime,
     GetUserDeathCount,
     GetUserDeathList,
     GetUserMessageCount,
     GetUserMurderCount,
     GetUserMurderList,
-    GetUserNicknameList,
-    GetUserRoleList,
     GetUsername,
     GetUserNickname,
+    GetUserNicknameList,
     GetUserRole,
+    GetUserRoleList,
     GetUserTotalPlayTime,
-    GetUserClaimList,
     Top50LargestClaimByUsers,
     Top50LargestNationByUsers,
 )
