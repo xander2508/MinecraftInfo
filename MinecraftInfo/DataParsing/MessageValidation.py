@@ -11,8 +11,8 @@ ID_LIMIT = 1000
 
 
 class MessagesReviewed:
-    def __init__(self) -> None:
-
+    def __init__(self, sqlQueryHandler: object) -> None:
+        self.sqlQueryHandler = sqlQueryHandler
         self.IDsReviewed = deque()
         self.__GetFromDatabase()
 
@@ -26,11 +26,13 @@ class MessagesReviewed:
         self.IDsReviewed.append(GetMessageReviewedIDs())
 
     def __PushToDatabase(self, messageID: int) -> None:
-        InsertMessageReviewedID(messageID)
+        self.sqlQueryHandler.QueueQuery(InsertMessageReviewedID, messageID)
 
     def MessageReviewed(self, messageID) -> None:
         if messageID not in self.IDsReviewed:
             if len(self.IDsReviewed) >= ID_LIMIT:
-                DeleteMessageReviewedID(self.IDsReviewed.popleft())
+                self.sqlQueryHandler.QueueQuery(
+                    DeleteMessageReviewedID, self.IDsReviewed.popleft()
+                )
             self.IDsReviewed.append(messageID)
             self.__PushToDatabase(messageID)

@@ -1,10 +1,14 @@
+import base64
 import os
 import sys
 
 from flask import Flask, render_template, request
+from werkzeug.serving import run_simple
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
-from MinecraftInfo.Util.FileOpener import GetUserModel
+from MinecraftInfo.Util.FileProcessing import GetMap, GenerateMap, GetUserModel
 from MinecraftInfo.Util.WebsiteSqlQueries import (
     GetAchievementList,
     GetAllAchievements,
@@ -22,6 +26,8 @@ from MinecraftInfo.Util.WebsiteSqlQueries import (
     GetLargestNationByChunks,
     GetLargestNationByClaims,
     GetLargestNationByUsers,
+    GetNationCapital,
+    GetNationClaimList,
     GetNationInfo,
     GetRoleList,
     GetTop50Achievement,
@@ -56,6 +62,7 @@ from MinecraftInfo.Util.WebsiteSqlQueries import (
 )
 
 app = Flask(__name__)
+MAP = GetMap()
 
 
 def GetAutocompleteLists() -> tuple:
@@ -79,122 +86,139 @@ def Index() -> object:
         HTML: index.html template with top statistics.
     """
     Users, Items, Achievements, Roles = GetAutocompleteLists()
-
-    MessagesSent = GetTopUserMessagesCount()
-    Playtime = GetTopUserTotalPlayTime()
-    Kills = GetTopUserKiller()
-    Deaths = GetTopUserDeaths()
-    TopUserAchievement = GetTopUserAchievementCount()
-    TopAchievement = GetTopAchievementCount()
-    Role = GetTopUserRole()
-    Item = GetTopItem()
-    LargestClaimChunks = GetLargestClaimByChunks()
-    LargestClaimUsers = GetLargestClaimByUsers()
-    LargestNationChunks = GetLargestNationByChunks()
-    LargestNationUsers = GetLargestNationByUsers()
-    LargestNationClaims = GetLargestNationByClaims()
-    Table = {
-        "1": {
-            "Title": "Top Statistics",
-            "Headers": ["Catagory", "Name", "Metric"],
-            "Body": [
-                [
-                    "Most Messages Sent",
-                    "<a href=/player?search="
-                    + MessagesSent[0]
-                    + ">"
-                    + MessagesSent[0]
-                    + "</a>",
-                    MessagesSent[1],
+    try:
+        MessagesSent = GetTopUserMessagesCount()
+        Playtime = GetTopUserTotalPlayTime()
+        Kills = GetTopUserKiller()
+        Deaths = GetTopUserDeaths()
+        TopUserAchievement = GetTopUserAchievementCount()
+        TopAchievement = GetTopAchievementCount()
+        Role = GetTopUserRole()
+        Item = GetTopItem()
+        LargestClaimChunks = GetLargestClaimByChunks()
+        LargestClaimUsers = GetLargestClaimByUsers()
+        LargestNationChunks = GetLargestNationByChunks()
+        LargestNationUsers = GetLargestNationByUsers()
+        LargestNationClaims = GetLargestNationByClaims()
+        Table = {
+            "1": {
+                "Title": "Top Statistics",
+                "Headers": ["Catagory", "Name", "Metric"],
+                "Body": [
+                    [
+                        "Most Messages Sent",
+                        "<a href=/player?search="
+                        + MessagesSent[0]
+                        + ">"
+                        + MessagesSent[0]
+                        + "</a>",
+                        MessagesSent[1],
+                    ],
+                    [
+                        "Most Playtime",
+                        "<a href=/player?search="
+                        + Playtime[0]
+                        + ">"
+                        + Playtime[0]
+                        + "</a>",
+                        str(float("{:.2f}".format(Playtime[1] / 3600000))) + " Hours",
+                    ],
+                    [
+                        "Top Kills",
+                        "<a href=/player?search=" + Kills[0] + ">" + Kills[0] + "</a>",
+                        Kills[1],
+                    ],
+                    [
+                        "Top Deaths",
+                        "<a href=/player?search="
+                        + Deaths[0]
+                        + ">"
+                        + Deaths[0]
+                        + "</a>",
+                        Deaths[1],
+                    ],
+                    [
+                        "Most Achievements",
+                        "<a href=/player?search="
+                        + TopUserAchievement[0]
+                        + ">"
+                        + TopUserAchievement[0]
+                        + "</a>",
+                        TopUserAchievement[1],
+                    ],
+                    [
+                        "Most Popular Achievement",
+                        "<a href=/achievement?search="
+                        + TopAchievement[0].replace(" ", "+")
+                        + ">"
+                        + TopAchievement[0]
+                        + "</a>",
+                        TopAchievement[1],
+                    ],
+                    [
+                        "Most Popular Role",
+                        "<a href=/role?search="
+                        + Role[0].replace(" ", "+")
+                        + ">"
+                        + Role[0]
+                        + "</a>",
+                        Role[1],
+                    ],
+                    [
+                        "Deadliest Item",
+                        "<a href=/item?search="
+                        + Item[0].strip("[").strip("]").replace(" ", "+")
+                        + ">"
+                        + Item[0].strip("[").strip("]")
+                        + "</a>",
+                        Item[1],
+                    ],
+                    [
+                        "Largest Claim (Chunks)",
+                        LargestClaimChunks[0],
+                        LargestClaimChunks[1],
+                    ],
+                    [
+                        "Largest Claim (Users)",
+                        LargestClaimUsers[0],
+                        LargestClaimUsers[1],
+                    ],
+                    [
+                        "Largest Nation (Chunks)",
+                        LargestNationChunks[0],
+                        LargestNationChunks[1],
+                    ],
+                    [
+                        "Largest Nation (Users)",
+                        LargestNationUsers[0],
+                        LargestNationUsers[1],
+                    ],
+                    [
+                        "Largest Nation (Claims)",
+                        LargestNationClaims[0],
+                        LargestNationClaims[1],
+                    ],
                 ],
-                [
-                    "Most Playtime",
-                    "<a href=/player?search="
-                    + Playtime[0]
-                    + ">"
-                    + Playtime[0]
-                    + "</a>",
-                    str(float("{:.2f}".format(Playtime[1] / 3600000))) + " Hours",
-                ],
-                [
-                    "Top Kills",
-                    "<a href=/player?search=" + Kills[0] + ">" + Kills[0] + "</a>",
-                    Kills[1],
-                ],
-                [
-                    "Top Deaths",
-                    "<a href=/player?search=" + Deaths[0] + ">" + Deaths[0] + "</a>",
-                    Deaths[1],
-                ],
-                [
-                    "Most Achievements",
-                    "<a href=/player?search="
-                    + TopUserAchievement[0]
-                    + ">"
-                    + TopUserAchievement[0]
-                    + "</a>",
-                    TopUserAchievement[1],
-                ],
-                [
-                    "Most Popular Achievement",
-                    "<a href=/achievement?search="
-                    + TopAchievement[0].replace(" ", "+")
-                    + ">"
-                    + TopAchievement[0]
-                    + "</a>",
-                    TopAchievement[1],
-                ],
-                [
-                    "Most Popular Role",
-                    "<a href=/role?search="
-                    + Role[0].replace(" ", "+")
-                    + ">"
-                    + Role[0]
-                    + "</a>",
-                    Role[1],
-                ],
-                [
-                    "Deadliest Item",
-                    "<a href=/item?search="
-                    + Item[0].strip("[").strip("]").replace(" ", "+")
-                    + ">"
-                    + Item[0].strip("[").strip("]")
-                    + "</a>",
-                    Item[1],
-                ],
-                [
-                    "Largest Claim (Chunks)",
-                    LargestClaimChunks[0],
-                    LargestClaimChunks[1],
-                ],
-                ["Largest Claim (Users)", LargestClaimUsers[0], LargestClaimUsers[1]],
-                [
-                    "Largest Nation (Chunks)",
-                    LargestNationChunks[0],
-                    LargestNationChunks[1],
-                ],
-                [
-                    "Largest Nation (Users)",
-                    LargestNationUsers[0],
-                    LargestNationUsers[1],
-                ],
-                [
-                    "Largest Nation (Claims)",
-                    LargestNationClaims[0],
-                    LargestNationClaims[1],
-                ],
-            ],
+            }
         }
-    }
 
-    return render_template(
-        "index.html",
-        title="Home",
-        list=Users,
-        searchbox="Search Users...",
-        Table=Table,
-        uri="player",
-    )
+        return render_template(
+            "index.html",
+            title="Home",
+            list=Users,
+            searchbox="Search Users...",
+            Table=Table,
+            uri="player",
+        )
+    except:
+        return render_template(
+            "index.html",
+            title="Home",
+            list=Users,
+            searchbox="Search Users...",
+            Table=[],
+            uri="player",
+        )
 
 
 @app.route("/player")
@@ -221,9 +245,9 @@ def SearchPlayer() -> object:
         NicknameList = GetUserNicknameList(User)
         RoleList = GetUserRoleList(User)
         ClaimList = GetUserClaimList(User)
-
         ClaimNationList = []
         if len(ClaimList) > 0:
+            Map = GenerateMap(MAP, ClaimList, False)
             for claim in ClaimList:
                 Nation = GetClaimNation(claim)
                 ClaimNationList.append(
@@ -285,6 +309,11 @@ def SearchPlayer() -> object:
                 "Title": "Member Claims",
                 "Headers": ["Claim", "Nation"],
                 "Body": ClaimNationList,
+            }
+            Table["Map"] = {
+                "Title": "Member Claims Locations",
+                "Headers": ["Claim Locations"],
+                "Body": [[Map]],
             }
         if len(KillList) > 0:
             Table["2"] = {
@@ -546,6 +575,7 @@ def SearchClaim() -> object:
     claim = request.args.get("search")
     Claims = GetAllClaims()
     ClaimLevel, ClaimCoords, ClaimChunks, ClaimNation, UserList = GetClaimInfo(claim)
+    Map = GenerateMap(MAP, [claim], False)
     if ClaimLevel:
         Table = {
             "1": {
@@ -560,6 +590,11 @@ def SearchClaim() -> object:
                 ],
             },
             "2": {
+                "Title": "Claim Location",
+                "Headers": ["Location"],
+                "Body": [[Map]],
+            },
+            "3": {
                 "Title": "Users Registered to Claim",
                 "Headers": ["Users"],
                 "Body": UserList,
@@ -618,6 +653,11 @@ def SearchNation() -> object:
         NationPlayers,
         NationClaims,
     ) = GetNationInfo(nation)
+
+    ClaimList = GetNationClaimList(nation)
+    NationCaptial = GetNationCapital(nation)
+    Map = GenerateMap(MAP, ClaimList, True, NationCaptial)
+
     if NationLevel:
         Table = {
             "1": {
@@ -632,6 +672,11 @@ def SearchNation() -> object:
                 ],
             },
             "2": {
+                "Title": "Map of Claims Registered to the Nation",
+                "Headers": ["Locations"],
+                "Body": [[Map]],
+            },
+            "3": {
                 "Title": "Claims Registered to the Nation",
                 "Headers": ["Claim", "Users"],
                 "Body": NationClaims,
@@ -689,11 +734,15 @@ def info() -> object:
                     "IF you wish to attempt to break it please message me on discord prior (xander2508#8106) so I can fix it."
                 ],
                 [""],
+                ["WHEN you spot a bug message me on discord (xander2508#8106)."],
+                [""],
                 [
                     "This website is run off a free cloud server and therefore is vulnerable to outages. I will do my best to maintain it but be aware."
                 ],
                 [""],
-                ["WHEN you spot a bug message me on discord (xander2508#8106)."],
+                [
+                    "Database can be made avalable on request if there is a good use case. Also if you are good at front-end dev hit me up."
+                ],
                 [""],
                 ["Feel free to donate to xander2508 however much you can."],
                 ["/pay xander2508 1000"],
@@ -710,9 +759,14 @@ def info() -> object:
     )
 
 
-def RunWebsite():
+def RunDebugWebsite():
     app.run(host="127.0.0.1", port=80, debug=True)
+
+
+def RunWebsite():
+    app.run(host="127.0.0.1", port=80, debug=False)
+    return app
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=80, debug=True)
+    RunDebugWebsite()

@@ -15,25 +15,23 @@ DATABASE_BACKUP_LOCATION = GetDatabaseBackupLocation()
 def BackupDatabase() -> None:
     try:
         sqliteConnection = sqlite3.connect(DATABASE_LOCATION, timeout=20)
-        with closing(sqliteConnection.cursor()) as cursor:
-            cursor.execute()
-            BackupDatabaseConnection = sqlite3.connect(
-                DATABASE_BACKUP_LOCATION, timeout=5
-            )
-            cursor.backup(BackupDatabaseConnection)
-            BackupDatabaseConnection.close()
+        BackupDatabaseConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
+        sqliteConnection.backup(BackupDatabaseConnection)
+        sqliteConnection.close()
+        BackupDatabaseConnection.close()
     except sqlite3.Error as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         if sqliteConnection:
             sqliteConnection.close()
+        if BackupDatabaseConnection:
             BackupDatabaseConnection.close()
 
 
 def Top50LargestNationByUsers() -> list:
     Nations = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT Nation, COUNT(UserCityLink.Name) FROM NationCityLink JOIN UserCityLink ON NationCityLink.City=UserCityLink.City GROUP BY Nation ORDER BY COUNT(UserCityLink.Name) DESC LIMIT 50"
@@ -59,7 +57,7 @@ def Top50LargestNationByUsers() -> list:
 def Top50LargestClaimByUsers() -> list:
     Claims = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT City, COUNT(Name) FROM UserCityLink GROUP BY City ORDER BY COUNT(Name) DESC LIMIT 50"
@@ -85,7 +83,7 @@ def Top50LargestClaimByUsers() -> list:
 def GetUserClaimList(user: str) -> list:
     Claims = [""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             Claims = []
             cursor.execute("SELECT City FROM UserCityLink WHERE Name=(?)", (user,))
@@ -103,7 +101,7 @@ def GetUserClaimList(user: str) -> list:
 def GetUserTotalPlayTime(user: str):
     Playtime = 0
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT TotalPlayTime FROM Users WHERE Name = (?) LIMIT 1", (user,)
@@ -121,7 +119,7 @@ def GetUserTotalPlayTime(user: str):
 def GetUserRole(user: str) -> str:
     Role = "None"
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT CurrentRole FROM Users WHERE User=(?) LIMIT 1", (user,)
@@ -139,7 +137,7 @@ def GetUserRole(user: str) -> str:
 def GetUserNicknameList(user: str) -> list:
     Nicknames = [""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             Nicknames = []
             cursor.execute("SELECT Nickname FROM NicknameLinks WHERE Name=(?)", (user,))
@@ -157,7 +155,7 @@ def GetUserNicknameList(user: str) -> list:
 def GetUsername(username: str) -> str:
     User = ""
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute("SELECT Name FROM Users WHERE Name=(?) LIMIT 1", (username,))
             rows = cursor.fetchall()
@@ -176,7 +174,7 @@ def GetUsername(username: str) -> str:
 def GetUserRoleList(user: str) -> list:
     Roles = [""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             Roles = []
             cursor.execute("SELECT Role FROM RoleLinks WHERE User=(?)", (user,))
@@ -196,7 +194,7 @@ def GetUserRoleList(user: str) -> list:
 def GetUserMurderList(user: str) -> dict:
     KillList = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT UserDead, ItemUsed FROM Deaths WHERE UserKiller = (?)", (user,)
@@ -225,7 +223,7 @@ def GetUserMurderList(user: str) -> dict:
 def GetUserMurderCount(user: str) -> int:
     Kills = 0
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT COUNT(UserKiller) FROM Deaths WHERE UserKiller = (?) LIMIT 1",
@@ -244,7 +242,7 @@ def GetUserMurderCount(user: str) -> int:
 def GetUserMessageCount(user: str) -> int:
     MessagesSent = 0
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT MessagesSent FROM Users WHERE Name = (?) LIMIT 1", (user,)
@@ -262,7 +260,7 @@ def GetUserMessageCount(user: str) -> int:
 def GetUserDeathList(user: str) -> dict:
     DeathList = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT UserKiller, ItemUsed FROM Deaths WHERE UserDead = (?)", (user,)
@@ -291,7 +289,7 @@ def GetUserDeathList(user: str) -> dict:
 def GetUserDeathCount(user: str) -> str:
     Deaths = 0
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT COUNT(UserDead) FROM Deaths WHERE UserDead= (?) LIMIT 1",
@@ -311,7 +309,7 @@ def GetUserCurrentPlayTime(user: str) -> tuple:
     LoginTime = 0
     LastSeenOnline = 0
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT LoginTime,LastSeenOnline FROM Users WHERE Name = (?) LIMIT 1",
@@ -330,7 +328,7 @@ def GetUserCurrentPlayTime(user: str) -> tuple:
 def GetUserAchievementList(user: str) -> dict:
     AchievementList = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT Achievement FROM AchievementLinks WHERE User=(?)", (user,)
@@ -358,7 +356,7 @@ def GetUserAchievementList(user: str) -> dict:
 def GetUserAchievementCount(user: str) -> dict:
     Achievement = 0
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT COUNT(User) FROM AchievementLinks WHERE User=(?)", (user,)
@@ -376,7 +374,7 @@ def GetUserAchievementCount(user: str) -> dict:
 def GetTopUserTotalPlayTime() -> list:
     Playtime = ["", ""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute("SELECT Name,MAX(TotalPlayTime) FROM Users")
             rows = cursor.fetchall()
@@ -392,7 +390,7 @@ def GetTopUserTotalPlayTime() -> list:
 def GetTopUserRole() -> list:
     Role = ["", ""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT Role,COUNT(Role) FROM RoleLinks WHERE NOT Role='None' GROUP BY Role ORDER BY COUNT(Role) DESC LIMIT 1"
@@ -410,7 +408,7 @@ def GetTopUserRole() -> list:
 def GetTopUserMessagesCount() -> list:
     MessagesSent = ["", ""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute("SELECT Name,MAX(MessagesSent) FROM Users")
             rows = cursor.fetchall()
@@ -426,7 +424,7 @@ def GetTopUserMessagesCount() -> list:
 def GetTopUserKiller() -> list:
     Kills = ["", ""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT UserKiller,COUNT(UserKiller) FROM Deaths GROUP BY UserKiller ORDER BY COUNT(UserKiller) DESC LIMIT 1"
@@ -444,7 +442,7 @@ def GetTopUserKiller() -> list:
 def GetTopUserDeaths() -> list:
     Deaths = ["", ""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT UserDead,COUNT(UserDead) FROM Deaths GROUP BY UserDead ORDER BY COUNT(UserDead) DESC LIMIT 1"
@@ -462,7 +460,7 @@ def GetTopUserDeaths() -> list:
 def GetTopUserAchievementCount() -> list:
     TopUserAchievement = ["", ""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT User,COUNT(User) FROM AchievementLinks GROUP BY User ORDER BY COUNT(User) DESC LIMIT 1"
@@ -480,7 +478,7 @@ def GetTopUserAchievementCount() -> list:
 def GetTopItem() -> list:
     Item = ["", ""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT ItemUsed,COUNT(ItemUsed) FROM Deaths GROUP BY ItemUsed ORDER BY COUNT(ItemUsed) DESC LIMIT 1"
@@ -498,7 +496,7 @@ def GetTopItem() -> list:
 def GetTopAchievementCount() -> list:
     TopAchievement = ["", ""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT Achievement ,COUNT(Achievement) FROM AchievementLinks GROUP BY Achievement ORDER BY COUNT(Achievement) DESC LIMIT 1"
@@ -516,7 +514,7 @@ def GetTopAchievementCount() -> list:
 def GetTop50UserTotalPlayTime():
     PlaytimeList = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             Users = []
             cursor.execute(
@@ -542,7 +540,7 @@ def GetTop50UserTotalPlayTime():
 def GetTop50Roles():
     Roles = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT Role,COUNT(Role) FROM RoleLinks WHERE NOT Role = 'None' GROUP BY Role ORDER BY COUNT(Role) DESC LIMIT 50"
@@ -567,7 +565,7 @@ def GetTop50Roles():
 def GetTop50Items():
     Items = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             Users = []
             cursor.execute(
@@ -597,7 +595,7 @@ def GetTop50Items():
 def GetTop50Achievement():
     Achievements = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             Users = []
             cursor.execute(
@@ -627,7 +625,7 @@ def GetTop50Achievement():
 def GetRoleList(role: str) -> list:
     RoleList = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute("SELECT User FROM RoleLinks WHERE Role=(?)", (role,))
             rows = cursor.fetchall()
@@ -646,6 +644,44 @@ def GetRoleList(role: str) -> list:
             return RoleList
 
 
+def GetNationCapital(nation: str) -> str:
+    CapitalName = ""
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("SELECT Capital FROM Nations WHERE Name = (?)", (nation,))
+            rows = cursor.fetchall()
+            for i in rows:
+                CapitalName = i[0]
+
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return CapitalName
+
+
+def GetNationClaimList(nation: str) -> dict:
+    ClaimList = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT City FROM NationCityLink WHERE Nation = (?)",
+                (nation,),
+            )
+            rows = cursor.fetchall()
+            for i in rows:
+                ClaimList.append(i[0])
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return ClaimList
+
+
 def GetNationInfo(nation: str) -> tuple:
     NationLevel, CaptialCoords, Captial, NationChunks, NationPlayers, NationClaims = (
         "",
@@ -656,7 +692,7 @@ def GetNationInfo(nation: str) -> tuple:
         [],
     )
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute("SELECT Level FROM Nations WHERE Name = (?)", (nation,))
             rows = cursor.fetchall()
@@ -721,7 +757,7 @@ def GetNationInfo(nation: str) -> tuple:
 def GetLargestNationByUsers() -> list:
     Nation = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT Nation, COUNT(UserCityLink.Name) FROM NationCityLink JOIN UserCityLink ON NationCityLink.City=UserCityLink.City GROUP BY Nation ORDER BY COUNT(UserCityLink.Name) DESC LIMIT 1"
@@ -744,7 +780,7 @@ def GetLargestNationByUsers() -> list:
 def GetLargestNationByClaims() -> list:
     Nation = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT Nation, COUNT(City) FROM NationCityLink GROUP BY Nation ORDER BY COUNT(City) DESC LIMIT 1"
@@ -752,7 +788,7 @@ def GetLargestNationByClaims() -> list:
             rows = cursor.fetchall()
             for i in rows:
                 Nation = [
-                    "<a href=/claim?search=" + str(i[0]) + ">" + i[0] + "</a>",
+                    "<a href=/nation?search=" + str(i[0]) + ">" + i[0] + "</a>",
                     str(i[1]),
                 ]
 
@@ -767,7 +803,7 @@ def GetLargestNationByClaims() -> list:
 def GetLargestNationByChunks() -> list:
     Nation = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT Nation, SUM(Cities.Chunks) FROM NationCityLink JOIN Cities ON NationCityLink.City=Cities.Name GROUP BY Nation ORDER BY SUM(Cities.Chunks) DESC LIMIT 1"
@@ -790,7 +826,7 @@ def GetLargestNationByChunks() -> list:
 def GetLargestClaimByUsers() -> list:
     Claim = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT City,COUNT(Name) FROM UserCityLink GROUP BY City ORDER BY COUNT(Name) DESC LIMIT 1"
@@ -813,7 +849,7 @@ def GetLargestClaimByUsers() -> list:
 def GetLargestClaimByChunks() -> list:
     Claim = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT Name, Chunks FROM Cities ORDER BY Chunks DESC LIMIT 1"
@@ -836,7 +872,7 @@ def GetLargestClaimByChunks() -> list:
 def GetItemMurderList(item: str) -> list:
     KillList = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT UserKiller,UserDead FROM Deaths WHERE ItemUsed = (?)", (item,)
@@ -861,7 +897,7 @@ def GetItemMurderList(item: str) -> list:
 def GetItem(itemInput: str) -> str:
     Item = ""
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT Name FROM Items WHERE Name=(?) LIMIT 1", (itemInput,)
@@ -882,7 +918,7 @@ def GetItem(itemInput: str) -> str:
 def GetClaimNation(claim: str) -> list:
     Nation = "None"
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT Nation FROM NationCityLink WHERE City=(?) LIMIT 1", (claim,)
@@ -901,7 +937,7 @@ def GetClaimNation(claim: str) -> list:
 def GetClaimInfo(claim: str) -> tuple:
     ClaimLevel, ClaimCoords, ClaimChunks, ClaimNation, UserList = "", "", "", "None", []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT Level, Coord, Chunks FROM Cities WHERE Name = (?)", (claim,)
@@ -915,7 +951,7 @@ def GetClaimInfo(claim: str) -> tuple:
             )
             rows = cursor.fetchall()
             for i in rows:
-                ClaimNation = i[0]
+                ClaimNation = "<a href=/nation?search=" + i[0] + ">" + i[0] + "</a>"
 
             cursor.execute("SELECT Name FROM UserCityLink WHERE City = (?)", (claim,))
             rows = cursor.fetchall()
@@ -935,7 +971,7 @@ def GetClaimInfo(claim: str) -> tuple:
 def GetAllUsers() -> list:
     Users = [""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             Users = []
             cursor.execute("SELECT Name FROM Users")
@@ -953,7 +989,7 @@ def GetAllUsers() -> list:
 def GetAllRoles() -> list:
     Roles = [""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             Roles = []
             cursor.execute("SELECT Role FROM Roles")
@@ -971,7 +1007,7 @@ def GetAllRoles() -> list:
 def GetAllNations() -> list:
     Nations = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute("SELECT Name FROM Nations")
             rows = cursor.fetchall()
@@ -988,7 +1024,7 @@ def GetAllNations() -> list:
 def GetAllItems() -> list:
     Items = [""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             Items = []
             cursor.execute("SELECT Name FROM Items")
@@ -1006,7 +1042,7 @@ def GetAllItems() -> list:
 def GetAllClaims() -> list:
     Claims = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute("SELECT Name FROM Cities")
             rows = cursor.fetchall()
@@ -1023,7 +1059,7 @@ def GetAllClaims() -> list:
 def GetAllAchievements() -> list:
     Achievements = [""]
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             Achievements = []
             cursor.execute("SELECT Achievement FROM Achievements")
@@ -1041,7 +1077,7 @@ def GetAllAchievements() -> list:
 def GetAchievementList(achievement: str) -> list:
     AchievementList = []
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT User FROM AchievementLinks WHERE Achievement=(?)",
@@ -1072,7 +1108,7 @@ def GetAchievementList(achievement: str) -> list:
 def GetUserNickname(user: str) -> str:
     Nickname = "None"
     try:
-        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
                 "SELECT CurrentNickname FROM Users WHERE Name=(?) LIMIT 1", (user,)

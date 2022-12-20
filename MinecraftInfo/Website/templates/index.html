@@ -17,7 +17,10 @@
 </div>
 
 <h1>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+  />
   <style>
     body {
       font-family: Arial;
@@ -27,7 +30,7 @@
       box-sizing: border-box;
     }
 
-    form.example input[type=text] {
+    form.example input[type="text"] {
       padding: 10px;
       font-size: 17px;
       border: 1px solid grey;
@@ -40,7 +43,7 @@
       float: left;
       width: 20%;
       padding: 10px;
-      background: #4FC3A1;
+      background: #4fc3a1;
       color: white;
       font-size: 17px;
       border: 1px solid grey;
@@ -57,9 +60,19 @@
       display: table;
     }
   </style>
-  <form autocomplete="off" class="example" action="/{{uri}}" style="margin:auto;max-width:300px">
-    <div class="autocomplete" style="width:300px;">
-      <input id="search" type="text" placeholder="{{searchbox}}" name="search">
+  <form
+    autocomplete="off"
+    class="example"
+    action="/{{uri}}"
+    style="margin: auto; max-width: 300px"
+  >
+    <div class="autocomplete" style="width: 300px">
+      <input
+        id="search"
+        type="text"
+        placeholder="{{searchbox}}"
+        name="search"
+      />
     </div>
     <button type="submit"><i class="fa fa-search"></i></button>
   </form>
@@ -177,8 +190,6 @@
     });
   }
   autocomplete(document.getElementById("search"), searchbox);
-
-
 </script>
 
 <style>
@@ -225,21 +236,21 @@
     opacity: 0;
   }
 
-  #menu__toggle:checked+.menu__btn>span {
+  #menu__toggle:checked + .menu__btn > span {
     transform: rotate(45deg);
   }
 
-  #menu__toggle:checked+.menu__btn>span::before {
+  #menu__toggle:checked + .menu__btn > span::before {
     top: 0;
     transform: rotate(0deg);
   }
 
-  #menu__toggle:checked+.menu__btn>span::after {
+  #menu__toggle:checked + .menu__btn > span::after {
     top: 0;
     transform: rotate(90deg);
   }
 
-  #menu__toggle:checked~.menu__box {
+  #menu__toggle:checked ~ .menu__box {
     left: 0 !important;
   }
 
@@ -253,27 +264,26 @@
     z-index: 1;
     display: block;
     padding: 0px;
-
   }
 
-  .menu__btn>span,
-  .menu__btn>span::before,
-  .menu__btn>span::after {
+  .menu__btn > span,
+  .menu__btn > span::before,
+  .menu__btn > span::after {
     display: block;
     position: absolute;
     width: 100%;
     height: 10px;
     background-color: #000000;
-    transition-duration: .25s;
+    transition-duration: 0.25s;
   }
 
-  .menu__btn>span::before {
-    content: '';
+  .menu__btn > span::before {
+    content: "";
     top: -16px;
   }
 
-  .menu__btn>span::after {
-    content: '';
+  .menu__btn > span::after {
+    content: "";
     top: 16px;
   }
 
@@ -287,24 +297,24 @@
     margin: 0;
     padding: 360px 0;
     list-style: none;
-    background-color: #ECEFF1;
-    box-shadow: 2px 2px 6px rgba(0, 0, 0, .4);
-    transition-duration: .25s;
+    background-color: #eceff1;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+    transition-duration: 0.25s;
   }
 
   .menu__item {
     display: block;
     padding: 12px 24px;
     color: #333;
-    font-family: 'Roboto', sans-serif;
+    font-family: "Roboto", sans-serif;
     font-size: 20px;
     font-weight: 600;
     text-decoration: none;
-    transition-duration: .25s;
+    transition-duration: 0.25s;
   }
 
   .menu__item:hover {
-    background-color: #CFD8DC;
+    background-color: #cfd8dc;
   }
 
   /* Table Styles */
@@ -339,9 +349,8 @@
 
   .fl-table thead th {
     color: #ffffff;
-    background: #4FC3A1;
+    background: #4fc3a1;
   }
-
 
   .fl-table thead th:nth-child(odd) {
     color: #ffffff;
@@ -349,7 +358,7 @@
   }
 
   .fl-table tr:nth-child(even) {
-    background: #F8F8F8;
+    background: #f8f8f8;
   }
 
   /* Responsive */
@@ -391,7 +400,7 @@
 
     .fl-table td,
     .fl-table th {
-      padding: 20px .625em .625em .625em;
+      padding: 20px 0.625em 0.625em 0.625em;
       height: 60px;
       vertical-align: middle;
       box-sizing: border-box;
@@ -420,12 +429,12 @@
     }
 
     .fl-table tr td:nth-child(odd) {
-      background: #F8F8F8;
-      border-right: 1px solid #E6E4E4;
+      background: #f8f8f8;
+      border-right: 1px solid #e6e4e4;
     }
 
     .fl-table tr td:nth-child(even) {
-      border-right: 1px solid #E6E4E4;
+      border-right: 1px solid #e6e4e4;
     }
 
     .fl-table tbody td {
@@ -477,12 +486,10 @@
     margin-top: -1px;
     font-weight: bold;
     text-align: center;
-
   }
 </style>
 
 <h2>{{title|safe}}</h2>
-
 
 {% for TableHeader in Table %}
 <h3>{{Table[TableHeader]["Title"]}}</h3>
@@ -505,13 +512,15 @@
           {% endfor %}
         </tr>
         {% endfor %}
-      <tbody>
+      </tbody>
+
+      <tbody></tbody>
     </table>
   </div>
 
   {% endfor %}
 </h4>
 <footer>
-  If you can spare it, please donate to xander2508.<br>
+  If you can spare it, please donate to xander2508.<br />
   "/pay xander2508 1000"
 </footer>

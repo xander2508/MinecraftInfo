@@ -4,9 +4,8 @@ import threading
 import time
 from logging import exception
 
-from MinecraftInfo.Util.WebsiteSqlQueries import BackupDatabase
-
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from MinecraftInfo.Util.WebsiteSqlQueries import BackupDatabase
 from MinecraftInfo.DataParsing.MapInfo import UpdateClaimInfo
 from MinecraftInfo.Website.Website import RunWebsite
 from MinecraftInfo.DataParsing.MessageValidation import MessagesReviewed
@@ -19,20 +18,20 @@ from MinecraftInfo.Util.Logging import LogError, LogInfo
 class Main:
     """Main handles the main aspects of the program. Collects data and then parses it."""
 
-    def __init__(self) -> None:
-        self.MessagesValidated = MessagesReviewed()
+    def __init__(self, sqlQueryHandler: object) -> None:
+        self.MessagesValidated = MessagesReviewed(sqlQueryHandler)
         self.DataSourceHandler = DataHandler(self.MessagesValidated)
         self.DiscordData = {}
 
     def UpdateDiscordData(self) -> None:
         self.DiscordData = self.DataSourceHandler.GetData()
 
-    def UpdatePlayerStatistics(self, SqlQueryHandler: object) -> None:
-        PlayerStatistics(self.DiscordData, self.MessagesValidated, SqlQueryHandler)
+    def UpdatePlayerStatistics(self, sqlQueryHandler: object) -> None:
+        PlayerStatistics(self.DiscordData, self.MessagesValidated, sqlQueryHandler)
 
 
 def DataCollection() -> None:
-    MainProgram = Main()
+    MainProgram = Main(SqlQueryHandler)
     StartTime = time.time()
     counter = 0
     while True:
@@ -48,6 +47,7 @@ def DataCollection() -> None:
             counter = DelayUpdateClaimInfo(counter)
             time.sleep(20)
             BackupDatabase()
+            time.sleep(10)
         except Exception as e:
             LogError(e, __name__, sys._getframe().f_code.co_name)
         except KeyboardInterrupt as e:

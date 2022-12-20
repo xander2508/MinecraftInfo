@@ -63,12 +63,13 @@ def LogDeathMessageEvent(
         if NumberOfMatches >= 2:
             UsernameKiller = nameParser(deathTypeMatch.group(2))
         else:
-            UsernameKiller = None
+            UsernameKiller = nameParser("None")
         if NumberOfMatches >= 3:
             ItemUsed = deathTypeMatch.group(3)
             sqlQueryHandler.QueueQuery(AddItem, ItemUsed)
         else:
-            ItemUsed = None
+            sqlQueryHandler.QueueQuery(AddItem, "None")
+            ItemUsed = "None"
         sqlQueryHandler.QueueQuery(
             AddDeath,
             deathMessageIndex,

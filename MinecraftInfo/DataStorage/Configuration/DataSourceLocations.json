@@ -9,5 +9,8 @@
     "ClaimURL": "http://104.238.222.67:2096/tiles/_markers_/marker_newrathnir.json",
     "DatabaseLocation": "MinecraftInfo\\DataStorage\\DataStorage.db",
     "DatabaseBackupLocation": "MinecraftInfo\\DataStorage\\DataStorageBackup.db",
-    "LogLevel": "WARN"
+    "LogLevel": "WARN",
+    "API_URL":  "https://api.mojang.com/profiles/minecraft",
+    "RenderURL":"https://crafatar.com/renders/body/",
+    "MapPath":"Eldham.png"
 }

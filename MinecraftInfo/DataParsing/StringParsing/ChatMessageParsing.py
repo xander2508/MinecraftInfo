@@ -1,6 +1,6 @@
 import json
 import re
-
+import sys
 from MinecraftInfo.DataParsing.StringParsing.NameParsing import NameParsing
 from MinecraftInfo.Util.Logging import LogError
 from MinecraftInfo.Util.SqlQueries import UpdateUserMessageCount

@@ -156,10 +156,9 @@ def AddDeath(
     messageID = int(messageID)
     deathMessage = str(deathMessage)
     usernameDead = str(usernameDead)
-    usernameKiller = str(usernameKiller)
     itemUsed = str(itemUsed)
+    usernameKiller = str(usernameKiller)
     try:
-
         cursor.execute("pragma foreign_keys=ON")
         cursor.execute(
             "INSERT or IGNORE INTO Deaths('Key','UserDead','UserKiller','ItemUsed','DeathMessage','Time') VALUES (?,?,?,?,?,?)",
@@ -172,6 +171,7 @@ def AddDeath(
                 int(timestamp.timestamp() * 1000),
             ),
         )
+
     except sqlite3.Error as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)
 
@@ -188,15 +188,17 @@ def AddDeathMessage(deathMessage: str, cursor: object) -> None:
         LogError(error, __name__, sys._getframe().f_code.co_name)
 
 
-def GetDeathMessages(cursor: object) -> dict:
+def GetDeathMessages() -> dict:
     DeathMessages = {}
     try:
-
-        cursor.execute("pragma foreign_keys=ON")
-        DeathsMessages = cursor.execute("SELECT * FROM DeathMessages")
-        DeathMessages = {}
-        for index, DeathMessage in enumerate(DeathsMessages):
-            DeathMessages[index] = DeathMessage[0]
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute("SELECT * FROM DeathMessages")
+            rows = cursor.fetchall()
+            DeathMessages = {}
+            for index, DeathMessage in enumerate(rows):
+                DeathMessages[index] = DeathMessage[0]
     except sqlite3.Error as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)
         DeathMessages = {}
@@ -204,29 +206,33 @@ def GetDeathMessages(cursor: object) -> dict:
         return DeathMessages
 
 
-def GetAchievementMessages(cursor: object) -> dict:
+def GetAchievementMessages() -> dict:
     AchievementMessages = {}
     try:
-
-        cursor.execute("pragma foreign_keys=ON")
-        AchievementMessagesSQL = cursor.execute("SELECT * FROM AchievementEvents")
-        for index, AchievementMessage in enumerate(AchievementMessagesSQL):
-            AchievementMessages[index] = AchievementMessage[0]
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute("SELECT * FROM AchievementEvents")
+            rows = cursor.fetchall()
+            for index, AchievementMessage in enumerate(rows):
+                AchievementMessages[index] = AchievementMessage[0]
     except sqlite3.Error as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)
     finally:
         return AchievementMessages
 
 
-def GetConnectionMessages(cursor: object) -> dict:
+def GetConnectionMessages() -> dict:
     ConnectionMessages = {}
     try:
-
-        cursor.execute("pragma foreign_keys=ON")
-        ConnectionEventMessages = cursor.execute("SELECT * FROM ConnectionEvents")
-        ConnectionMessages = {}
-        for index, ConnectionMessage in enumerate(ConnectionEventMessages):
-            ConnectionMessages[index] = ConnectionMessage[0]
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute("SELECT * FROM ConnectionEvents")
+            rows = cursor.fetchall()
+            ConnectionMessages = {}
+            for index, ConnectionMessage in enumerate(rows):
+                ConnectionMessages[index] = ConnectionMessage[0]
     except sqlite3.Error as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)
         ConnectionMessages = {}
@@ -234,14 +240,16 @@ def GetConnectionMessages(cursor: object) -> dict:
         return ConnectionMessages
 
 
-def GetNicknameLinks(cursor: object) -> dict:
+def GetNicknameLinks() -> dict:
     try:
-
-        cursor.execute("pragma foreign_keys=ON")
-        NicknameLinks = cursor.execute("SELECT * FROM NicknameLinks")
-        NicknameLinksDict = {}
-        for index, NicknameLink in enumerate(NicknameLinks):
-            NicknameLinksDict[index] = [NicknameLink[0], NicknameLink[1]]
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute("SELECT * FROM NicknameLinks")
+            rows = cursor.fetchall()
+            NicknameLinksDict = {}
+            for index, NicknameLink in enumerate(rows):
+                NicknameLinksDict[index] = [NicknameLink[0], NicknameLink[1]]
     except sqlite3.Error as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)
         NicknameLinksDict = {}
@@ -280,13 +288,14 @@ def UpdateUserTotalPlayTime(user: str, cursor: object) -> None:
     try:
 
         cursor.execute("pragma foreign_keys=ON")
-        LoginTimeSQL = cursor.execute(
+        cursor.execute(
             "SELECT LoginTime, LastSeenOnline FROM Users WHERE Name = (?) LIMIT 1",
             (user,),
         )
+        rows = cursor.fetchall()
         LoginTime = 0
         LastSeenOnline = 0
-        for i in LoginTimeSQL:
+        for i in rows:
             LoginTime, LastSeenOnline = i[0], i[1]
 
         if LoginTime != 0:
@@ -296,12 +305,13 @@ def UpdateUserTotalPlayTime(user: str, cursor: object) -> None:
         else:
             PlayTime = 0
 
-        TotalPlayTimeSQL = cursor.execute(
+        cursor.execute(
             "SELECT TotalPlayTime FROM Users WHERE Name = (?) LIMIT 1",
             (user,),
         )
+        rows = cursor.fetchall()
         TotalPlayTime = 0
-        for i in TotalPlayTimeSQL:
+        for i in rows:
             TotalPlayTime = i[0]
         TotalPlayTime += PlayTime
         cursor.execute(
@@ -313,43 +323,47 @@ def UpdateUserTotalPlayTime(user: str, cursor: object) -> None:
         )
     except sqlite3.Error as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)
-    SetUserOffline(user)
+    SetUserOffline(user, cursor)
 
 
-def GetOnlinePlayers(cursor: object) -> list:
+def GetOnlinePlayers() -> list:
     OnlinePlayers = []
     try:
-
-        cursor.execute("pragma foreign_keys=ON")
-        OnlinePlayersSQL = cursor.execute(
-            "SELECT Name FROM Users WHERE NOT LoginTime = 0",
-        )
-        for Account in OnlinePlayersSQL:
-            OnlinePlayers.append(Account[0])
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute(
+                "SELECT Name FROM Users WHERE NOT LoginTime = 0",
+            )
+            rows = cursor.fetchall()
+            for Account in rows:
+                OnlinePlayers.append(Account[0])
     except sqlite3.Error as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)
-
+    finally:
         return OnlinePlayers
 
 
-def GetOnlineStatus(user: str, cursor: object) -> None:
+def GetOnlineStatus(user: str) -> None:
     OnlineStatus = False
     try:
-
-        cursor.execute("pragma foreign_keys=ON")
-        OnlineStatusSQL = cursor.execute(
-            "SELECT LoginTime FROM Users WHERE Name = (?) LIMIT 1",
-            (user,),
-        )
-        for i in OnlineStatusSQL:
-            Online = i[0]
-        if int(Online):
-            OnlineStatus = True
-        else:
-            OnlineStatus = False
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute(
+                "SELECT LoginTime FROM Users WHERE Name = (?) LIMIT 1",
+                (user,),
+            )
+            rows = cursor.fetchall()
+            for i in rows:
+                Online = i[0]
+            if int(Online):
+                OnlineStatus = True
+            else:
+                OnlineStatus = False
     except sqlite3.Error as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)
-
+    finally:
         return OnlineStatus
 
 
@@ -426,31 +440,33 @@ def AddCurrentRole(username: str, role: str, cursor: object) -> None:
         LogError(error, __name__, sys._getframe().f_code.co_name)
 
 
-def LogUnknownEvent(unknownEvent: str, cursor: object) -> None:
+def LogUnknownEvent(unknownEvent: str, _: object = "") -> None:
     try:
-
-        cursor.execute("pragma foreign_keys=ON")
-        cursor.execute(
-            "INSERT or IGNORE INTO UnknownEvents('EventMessage') VALUES (?)",
-            (unknownEvent,),
-        )
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute(
+                "INSERT or IGNORE INTO UnknownEvents('EventMessage') VALUES (?)",
+                (unknownEvent,),
+            )
     except sqlite3.Error as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)
 
 
-def GetExistingNicknameLink(nickname: str, cursor: object) -> str:
+def GetExistingNicknameLink(nickname: str) -> str:
     Link = None
     try:
-
-        cursor.execute("pragma foreign_keys=ON")
-
-        NicknameLink = cursor.execute(
-            "SELECT * FROM NicknameLinks WHERE Nickname = (?) LIMIT 1",
-            (nickname,),
-        )
-        Link = None
-        for Account in NicknameLink:
-            Link = Account[0]
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute("pragma foreign_keys=ON")
+            cursor.execute(
+                "SELECT * FROM NicknameLinks WHERE Nickname = (?) LIMIT 1",
+                (nickname,),
+            )
+            rows = cursor.fetchall()
+            Link = None
+            for Account in rows:
+                Link = Account[0]
     except sqlite3.Error as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)
         Link = None
@@ -458,18 +474,20 @@ def GetExistingNicknameLink(nickname: str, cursor: object) -> str:
         return Link
 
 
-def GetMessageReviewedIDs(cursor: object) -> list:
+def GetMessageReviewedIDs() -> list:
     MessageIDs = []
     try:
-
-        MessageIDsSQL = cursor.execute(
-            "SELECT * FROM MessagesReviewed",
-        )
-        for IDs in MessageIDsSQL:
-            MessageIDs.append(IDs[0])
+        sqliteConnection = sqlite3.connect(DATABASE_LOCATION)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT * FROM MessagesReviewed",
+            )
+            rows = cursor.fetchall()
+            for IDs in rows:
+                MessageIDs.append(IDs[0])
     except sqlite3.Error as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)
-
+    finally:
         return MessageIDs
 
 
@@ -541,12 +559,13 @@ def UpdateUserMessageCount(user: str, messageCount: int, cursor: object) -> None
     try:
 
         cursor.execute("pragma foreign_keys=ON")
-        MessagesSentSQL = cursor.execute(
+        cursor.execute(
             "SELECT MessagesSent FROM Users WHERE Name = (?) LIMIT 1",
             (user,),
         )
+        rows = cursor.fetchall()
         MessagesSent = 0
-        for i in MessagesSentSQL:
+        for i in rows:
             MessagesSent = int(i[0])
         MessagesSent += messageCount
         cursor.execute(
