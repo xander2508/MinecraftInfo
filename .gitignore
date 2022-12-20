@@ -172,3 +172,4 @@ cython_debug/
 #.idea/
 MinecraftInfo/DataSources/AuthToken.py
 MinecraftInfo/TEST_DELETE/
+.vscode
