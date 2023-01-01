@@ -1,7 +1,12 @@
 import json
 import logging
+import os
 
-JSON_LOCATION = "MinecraftInfo\DataStorage\Configuration\DataSourceLocations.json"
+JSON_LOCATION = (
+    os.path.dirname(os.path.abspath(__file__))
+    + "/../DataStorage/Configuration/DataSourceLocations.json"
+)
+
 with open(JSON_LOCATION) as JsonFile:
     DataSource = json.load(JsonFile)
 LogLevel = DataSource["LogLevel"]

@@ -6,7 +6,7 @@ import os
 
 JSON_LOCATION = (
     os.path.dirname(os.path.abspath(__file__))
-    + "\..\DataStorage\Configuration\DataSourceLocations.json"
+    + "/../DataStorage/Configuration/DataSourceLocations.json"
 )
 
 
