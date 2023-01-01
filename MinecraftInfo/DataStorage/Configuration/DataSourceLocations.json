@@ -12,5 +12,5 @@
     "LogLevel": "WARN",
     "API_URL":  "https://api.mojang.com/profiles/minecraft",
     "RenderURL":"https://crafatar.com/renders/body/",
-    "MapPath":"Eldham.png"
+    "MapPath":"/../DataStorage/Map/Eldham.png"
 }

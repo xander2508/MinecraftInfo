@@ -2,9 +2,12 @@ import json
 import sys
 from MinecraftInfo.Util.FileOpener import LoadJsonFile
 from MinecraftInfo.Util.Logging import LogError
+import os
 
-
-JSON_LOCATION = "MinecraftInfo\DataStorage\Configuration\DataSourceLocations.json"
+JSON_LOCATION = (
+    os.path.dirname(os.path.abspath(__file__))
+    + "\..\DataStorage\Configuration\DataSourceLocations.json"
+)
 
 
 def GetUsernameUrl() -> str:

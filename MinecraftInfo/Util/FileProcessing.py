@@ -6,12 +6,13 @@ import requests
 import cv2
 import numpy as np
 import copy
+import os
 
 from MinecraftInfo.Util.WebsiteSqlQueries import GetClaimInfo
 
 
 def GetMap() -> dict:
-    Filepath = "./MinecraftInfo/DataStorage/Map/" + GetMapPath()
+    Filepath = os.path.dirname(os.path.abspath(__file__)) + GetMapPath()
     Image = cv2.imread(Filepath, cv2.IMREAD_UNCHANGED)
     return Image
 
