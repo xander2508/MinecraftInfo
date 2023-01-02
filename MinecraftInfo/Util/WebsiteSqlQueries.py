@@ -32,13 +32,13 @@ def BackupDatabase() -> None:
             BackupDatabaseConnection.close()
 
 
-def Top50LargestNationByUsers() -> list:
+def Top50LargestNationByClaims() -> list:
     Nations = []
     try:
         sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
-                "SELECT Nation, COUNT(UserCityLink.Name) FROM NationCityLink JOIN UserCityLink ON NationCityLink.City=UserCityLink.City GROUP BY Nation ORDER BY COUNT(UserCityLink.Name) DESC LIMIT 50"
+                "SELECT Nation, COUNT(City) FROM NationCityLink GROUP BY Nation ORDER BY COUNT(City) DESC LIMIT 50"
             )
             rows = cursor.fetchall()
             for index, i in enumerate(rows):
@@ -56,6 +56,84 @@ def Top50LargestNationByUsers() -> list:
         if sqliteConnection:
             sqliteConnection.close()
         return Nations
+
+
+def Top50LargestNationByChunks() -> list:
+    Nations = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT Nation, SUM(Cities.Chunks) FROM NationCityLink JOIN Cities ON NationCityLink.City=Cities.Name GROUP BY Nation ORDER BY SUM(Cities.Chunks) DESC LIMIT 50"
+            )
+            rows = cursor.fetchall()
+            for index, i in enumerate(rows):
+                Nations.append(
+                    [
+                        str(index + 1),
+                        "<a href=/nation?search=" + str(i[0]) + ">" + i[0] + "</a>",
+                        str(i[1]),
+                    ]
+                )
+
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Nations
+
+
+def Top50LargestNationByUsers() -> list:
+    Nations = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT Nation, COUNT(DISTINCT UserCityLink.Name) FROM NationCityLink JOIN UserCityLink ON NationCityLink.City=UserCityLink.City GROUP BY Nation ORDER BY COUNT(DISTINCT UserCityLink.Name) DESC LIMIT 50"
+            )
+            rows = cursor.fetchall()
+            for index, i in enumerate(rows):
+                Nations.append(
+                    [
+                        str(index + 1),
+                        "<a href=/nation?search=" + str(i[0]) + ">" + i[0] + "</a>",
+                        str(i[1]),
+                    ]
+                )
+
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Nations
+
+
+def Top50LargestClaimByChunks() -> list:
+    Claims = []
+    try:
+        sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
+        with closing(sqliteConnection.cursor()) as cursor:
+            cursor.execute(
+                "SELECT Name, Chunks FROM Cities ORDER BY Chunks DESC LIMIT 50"
+            )
+            rows = cursor.fetchall()
+            for index, i in enumerate(rows):
+                Claims.append(
+                    [
+                        str(index + 1),
+                        "<a href=/claim?search=" + str(i[0]) + ">" + i[0] + "</a>",
+                        str(i[1]),
+                    ]
+                )
+
+    except sqlite3.Error as error:
+        LogError(error, __name__, sys._getframe().f_code.co_name)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+        return Claims
 
 
 def Top50LargestClaimByUsers() -> list:
@@ -209,7 +287,7 @@ def GetUserMurderList(user: str) -> dict:
                 KillList.append(
                     [
                         "<a href=/player?search=" + i[0] + ">" + i[0] + "</a>",
-                        "<a href=/item?search="
+                        "<a href=/weapon?search="
                         + i[1].strip("[").strip("]").replace(" ", "+")
                         + ">"
                         + i[1].strip("[").strip("]")
@@ -275,7 +353,7 @@ def GetUserDeathList(user: str) -> dict:
                 DeathList.append(
                     [
                         "<a href=/player?search=" + i[0] + ">" + i[0] + "</a>",
-                        "<a href=/item?search="
+                        "<a href=/weapon?search="
                         + i[1].strip("[").strip("]").replace(" ", "+")
                         + ">"
                         + i[1].strip("[").strip("]")
@@ -580,7 +658,7 @@ def GetTop50Items():
                 Items.append(
                     [
                         str(index + 1),
-                        "<a href=/item?search="
+                        "<a href=/weapon?search="
                         + str(i[0]).replace(" ", "+").strip("[").strip("]")
                         + ">"
                         + i[0].strip("[").strip("]")
@@ -764,7 +842,7 @@ def GetLargestNationByUsers() -> list:
         sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
-                "SELECT Nation, COUNT(DISTINCT UserCityLink.Name) FROM NationCityLink JOIN UserCityLink ON NationCityLink.City=UserCityLink.City GROUP BY Nation ORDER BY COUNT(UserCityLink.Name) DESC LIMIT 1"
+                "SELECT Nation, COUNT(DISTINCT UserCityLink.Name) FROM NationCityLink JOIN UserCityLink ON NationCityLink.City=UserCityLink.City GROUP BY Nation ORDER BY COUNT(DISTINCT UserCityLink.Name) DESC LIMIT 1"
             )
             rows = cursor.fetchall()
             for i in rows:

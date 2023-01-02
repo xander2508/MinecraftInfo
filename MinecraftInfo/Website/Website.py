@@ -57,7 +57,10 @@ from MinecraftInfo.Util.WebsiteSqlQueries import (
     GetUserRole,
     GetUserRoleList,
     GetUserTotalPlayTime,
+    Top50LargestClaimByChunks,
     Top50LargestClaimByUsers,
+    Top50LargestNationByChunks,
+    Top50LargestNationByClaims,
     Top50LargestNationByUsers,
 )
 
@@ -165,8 +168,8 @@ def Index() -> object:
                         Role[1],
                     ],
                     [
-                        "Deadliest Item",
-                        "<a href=/item?search="
+                        "Deadliest Weapon",
+                        "<a href=/weapon?search="
                         + Item[0].strip("[").strip("]").replace(" ", "+")
                         + ">"
                         + Item[0].strip("[").strip("]")
@@ -387,9 +390,9 @@ def SearchPlayer() -> object:
         )
 
 
-@app.route("/item")
-def SearchItem() -> object:
-    """Search for an indivigual item.
+@app.route("/weapon")
+def SearchWeapon() -> object:
+    """Search for an indivigual weapon.
 
     Returns:
         HTML: index.html template with an items statistics
@@ -403,7 +406,7 @@ def SearchItem() -> object:
         KillList = GetItemMurderList(Item)
         Table = {
             "1": {
-                "Title": "Item Statistics",
+                "Title": "Weapon Statistics",
                 "Headers": ["Category", "Metric"],
                 "Body": [["Number of murders using item", str(len(KillList))]],
             },
@@ -417,9 +420,9 @@ def SearchItem() -> object:
             "index.html",
             title=Item.strip("[").strip("]"),
             Table=Table,
-            searchbox="Search Items...",
+            searchbox="Search Weapons...",
             list=Items,
-            uri="item",
+            uri="weapon",
         )
 
     else:
@@ -430,7 +433,7 @@ def SearchItem() -> object:
                 "Headers": [""],
                 "Body": [
                     [
-                        "Use the search box at the top of the page to search for a specific item."
+                        "Use the search box at the top of the page to search for a specific weapon."
                     ]
                 ],
             },
@@ -443,11 +446,11 @@ def SearchItem() -> object:
 
         return render_template(
             "index.html",
-            title="Item Info",
+            title="Weapon Info",
             Table=Table,
             searchbox="Search Items...",
             list=Items,
-            uri="item",
+            uri="weapon",
         )
 
 
@@ -609,7 +612,8 @@ def SearchClaim() -> object:
             uri="claim",
         )
     else:
-        ClaimList = Top50LargestClaimByUsers()
+        ClaimUserList = Top50LargestClaimByUsers()
+        ClaimChunkList = Top50LargestClaimByChunks()
         Table = {
             "1": {
                 "Title": "INFO",
@@ -623,7 +627,12 @@ def SearchClaim() -> object:
             "2": {
                 "Title": "Top 50 Claims by Users",
                 "Headers": ["Index", "Claim", "Users"],
-                "Body": ClaimList,
+                "Body": ClaimUserList,
+            },
+            "3": {
+                "Title": "Top 50 Claims by Chunks",
+                "Headers": ["Index", "Claim", "Chunks"],
+                "Body": ClaimChunkList,
             },
         }
         return render_template(
@@ -691,7 +700,9 @@ def SearchNation() -> object:
             uri="nation",
         )
     else:
-        NationList = Top50LargestNationByUsers()
+        NationUserList = Top50LargestNationByUsers()
+        NationChunkList = Top50LargestNationByChunks()
+        NationClaimList = Top50LargestNationByClaims()
         Table = {
             "1": {
                 "Title": "INFO",
@@ -705,7 +716,17 @@ def SearchNation() -> object:
             "2": {
                 "Title": "Top 50 Nations by Users",
                 "Headers": ["Index", "Nation", "Users"],
-                "Body": NationList,
+                "Body": NationUserList,
+            },
+            "3": {
+                "Title": "Top 50 Nations by Chunks",
+                "Headers": ["Index", "Nation", "Chunks"],
+                "Body": NationChunkList,
+            },
+            "4": {
+                "Title": "Top 50 Nations by Claims",
+                "Headers": ["Index", "Nation", "Claims"],
+                "Body": NationClaimList,
             },
         }
         return render_template(
