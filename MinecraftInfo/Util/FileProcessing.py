@@ -21,14 +21,14 @@ def GenerateMap(Map: dict, Claims: dict, Names: bool, Capital: str = "None") -> 
     # Names
     # False = None
     # True = Capital
-    NewMap = copy.deepcopy(Map)
+    # NewMap = copy.deepcopy(Map)
 
     CaptialX = 0
     CaptialZ = 0
     Size = 50
     ImageArray = np.full((4717, 4717, 4), (255, 255, 255, 0), np.uint8)
     for Claim in Claims:
-        _, ClaimCoords, _, _, _ = GetClaimInfo(Claim)
+        _, ClaimCoords, _, _, _ = GetClaimInfo(str(Claim))
         ClaimCoordsXZ = ClaimCoords.split(",")
         X = int((int(ClaimCoordsXZ[0]) + 7500) / 3.17998728005)
         Z = int((int(ClaimCoordsXZ[1]) + 7500) / 3.17998728005)
@@ -82,20 +82,18 @@ def GenerateMap(Map: dict, Claims: dict, Names: bool, Capital: str = "None") -> 
             )
         except:
             pass
-    y1, y2 = 0, 0 + ImageArray.shape[0]
-    x1, x2 = 0, 0 + ImageArray.shape[1]
-    alpha_s = ImageArray[:, :, 3] / 255.0
-    alpha_l = 1.0 - alpha_s
-    for c in range(0, 3):
-        NewMap[y1:y2, x1:x2, c] = (
-            alpha_s * ImageArray[:, :, c] + alpha_l * NewMap[y1:y2, x1:x2, c]
-        )
-    Base64PNG = base64.b64encode(cv2.imencode(".png", NewMap)[1]).decode()
 
+    BaseMap64 = base64.b64encode(cv2.imencode(".png", Map)[1]).decode()
+    OverlayMap64 = base64.b64encode(cv2.imencode(".png", ImageArray)[1]).decode()
     NewMap = (
-        "<img id='base64image' width='70%' height='70%' src='data:image/png;base64, "
-        + Base64PNG
+        '<div style="position: relative; width: 750px; height: 750px; ">'
+        + "<img width='100%' height='100%' style='position: absolute; top: 0; left: 250px; z-index: 1;' src='data:image/png;base64, "
+        + BaseMap64
         + "' />"
+        + "<img width='100%' height='100%' style='position: absolute; top: 0; left: 250px; z-index: 2;' src='data:image/png;base64, "
+        + OverlayMap64
+        + "' />"
+        + "</div>"
     )
     return NewMap
 

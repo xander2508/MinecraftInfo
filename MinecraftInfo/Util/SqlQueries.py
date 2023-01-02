@@ -5,8 +5,9 @@ from datetime import datetime
 
 from MinecraftInfo.Util.JsonQueries import GetDatabaseLocation
 from MinecraftInfo.Util.Logging import LogError, LogInfo
+import os
 
-DATABASE_LOCATION = GetDatabaseLocation()
+DATABASE_LOCATION = os.path.dirname(os.path.abspath(__file__)) + GetDatabaseLocation()
 
 
 def LinkCityUsers(player: str, cityName: str, cursor: object) -> None:

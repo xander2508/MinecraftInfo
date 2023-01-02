@@ -6,8 +6,9 @@ import time
 from typing import Callable
 import threading
 from MinecraftInfo.Util.JsonQueries import GetDatabaseLocation
+import os
 
-DATABASE_LOCATION = GetDatabaseLocation()
+DATABASE_LOCATION = os.path.dirname(os.path.abspath(__file__)) + GetDatabaseLocation()
 
 
 class SqlQueryHandler:

@@ -8,8 +8,12 @@ from MinecraftInfo.Util.JsonQueries import (
 )
 from MinecraftInfo.Util.Logging import LogError, LogInfo
 
-DATABASE_LOCATION = GetDatabaseLocation()
-DATABASE_BACKUP_LOCATION = GetDatabaseBackupLocation()
+import os
+
+DATABASE_LOCATION = os.path.dirname(os.path.abspath(__file__)) + GetDatabaseLocation()
+DATABASE_BACKUP_LOCATION = (
+    os.path.dirname(os.path.abspath(__file__)) + GetDatabaseBackupLocation()
+)
 
 
 def BackupDatabase() -> None:
@@ -711,7 +715,7 @@ def GetNationInfo(nation: str) -> tuple:
                 CaptialCoords = i[0]
 
             cursor.execute(
-                "SELECT COUNT(UserCityLink.Name) FROM NationCityLink JOIN UserCityLink ON NationCityLink.City=UserCityLink.City WHERE Nation = (?) GROUP BY Nation",
+                "SELECT COUNT(DISTINCT UserCityLink.Name) FROM NationCityLink JOIN UserCityLink ON NationCityLink.City=UserCityLink.City WHERE Nation = (?) GROUP BY Nation",
                 (nation,),
             )
             rows = cursor.fetchall()
@@ -724,7 +728,7 @@ def GetNationInfo(nation: str) -> tuple:
             )
             rows = cursor.fetchall()
             for i in rows:
-                NationChunks = str(i[0])
+                NationChunks = str(i[1])
 
             cursor.execute(
                 "SELECT NationCityLink.City, (SELECT COUNT(UserCityLink.Name) FROM UserCityLink WHERE UserCityLink.City=NationCityLink.City) FROM NationCityLink WHERE Nation = (?) ORDER BY (SELECT COUNT(UserCityLink.Name) FROM UserCityLink WHERE UserCityLink.City=NationCityLink.City) DESC",
@@ -760,7 +764,7 @@ def GetLargestNationByUsers() -> list:
         sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
-                "SELECT Nation, COUNT(UserCityLink.Name) FROM NationCityLink JOIN UserCityLink ON NationCityLink.City=UserCityLink.City GROUP BY Nation ORDER BY COUNT(UserCityLink.Name) DESC LIMIT 1"
+                "SELECT Nation, COUNT(DISTINCT UserCityLink.Name) FROM NationCityLink JOIN UserCityLink ON NationCityLink.City=UserCityLink.City GROUP BY Nation ORDER BY COUNT(UserCityLink.Name) DESC LIMIT 1"
             )
             rows = cursor.fetchall()
             for i in rows:
