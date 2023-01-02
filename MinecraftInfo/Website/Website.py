@@ -2,6 +2,7 @@ import base64
 import os
 import sys
 
+from flask import send_from_directory
 from flask import Flask, render_template, request
 from werkzeug.serving import run_simple
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -79,6 +80,15 @@ def GetAutocompleteLists() -> tuple:
     Achievements = str(GetAllAchievements())
     Roles = str(GetAllRoles())
     return Users, Items, Achievements, Roles
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, "static"),
+        "favicon.ico",
+        mimetype="image/vnd.microsoft.icon",
+    )
 
 
 @app.route("/")
