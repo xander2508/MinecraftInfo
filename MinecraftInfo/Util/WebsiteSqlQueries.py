@@ -204,7 +204,7 @@ def GetUserRole(user: str) -> str:
         sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
-                "SELECT CurrentRole FROM Users WHERE User=(?) LIMIT 1", (user,)
+                "SELECT CurrentRole FROM Users WHERE Name=(?) LIMIT 1", (user,)
             )
             rows = cursor.fetchall()
             Role = rows[0][0]
@@ -263,7 +263,13 @@ def GetUserRoleList(user: str) -> list:
             rows = cursor.fetchall()
             for i in rows:
                 Roles.append(
-                    ["<a href=/role?search=" + str(i[0]) + ">" + i[0] + "</a>"]
+                    [
+                        "<a href=/role?search="
+                        + str(i[0]).replace(" ", "+")
+                        + ">"
+                        + i[0]
+                        + "</a>"
+                    ]
                 )
     except sqlite3.Error as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)
@@ -632,7 +638,11 @@ def GetTop50Roles():
                 Roles.append(
                     [
                         str(index + 1),
-                        "<a href=/role?search=" + str(i[0]) + ">" + i[0] + "</a>",
+                        "<a href=/role?search="
+                        + str(i[0]).replace(" ", "+")
+                        + ">"
+                        + i[0]
+                        + "</a>",
                         str(i[1]),
                     ]
                 )
