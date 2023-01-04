@@ -267,7 +267,7 @@ def GetUserRoleList(user: str) -> list:
                         "<a href=/role?search="
                         + str(i[0]).replace(" ", "+")
                         + ">"
-                        + i[0]
+                        + str(i[0])
                         + "</a>"
                     ]
                 )
@@ -294,9 +294,9 @@ def GetUserMurderList(user: str) -> dict:
                     [
                         "<a href=/player?search=" + i[0] + ">" + i[0] + "</a>",
                         "<a href=/weapon?search="
-                        + i[1].strip("[").strip("]").replace(" ", "+")
+                        + str(i[1]).strip("[").strip("]").replace(" ", "+")
                         + ">"
-                        + i[1].strip("[").strip("]")
+                        + str(i[1]).strip("[").strip("]")
                         + "</a>",
                     ]
                 )
@@ -481,7 +481,7 @@ def GetTopUserRole() -> list:
         sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
-                "SELECT Role,COUNT(Role) FROM RoleLinks WHERE NOT Role='None' GROUP BY Role ORDER BY COUNT(Role) DESC LIMIT 1"
+                "SELECT CurrentRole,COUNT(CurrentRole) FROM Users WHERE NOT CurrentRole='None' GROUP BY CurrentRole ORDER BY COUNT(CurrentRole) DESC LIMIT 1"
             )
             rows = cursor.fetchall()
             Role = [rows[0][0], rows[0][1]]
@@ -631,7 +631,7 @@ def GetTop50Roles():
         sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
-                "SELECT Role,COUNT(Role) FROM RoleLinks WHERE NOT Role = 'None' GROUP BY Role ORDER BY COUNT(Role) DESC LIMIT 50"
+                "SELECT CurrentRole,COUNT(CurrentRole) FROM Users WHERE NOT CurrentRole = 'None' GROUP BY CurrentRole ORDER BY COUNT(CurrentRole) DESC LIMIT 50"
             )
             rows = cursor.fetchall()
             for index, i in enumerate(rows):
@@ -719,7 +719,7 @@ def GetRoleList(role: str) -> list:
     try:
         sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
-            cursor.execute("SELECT User FROM RoleLinks WHERE Role=(?)", (role,))
+            cursor.execute("SELECT Name FROM Users WHERE CurrentRole=(?)", (role,))
             rows = cursor.fetchall()
             for i in rows:
                 RoleList.append(

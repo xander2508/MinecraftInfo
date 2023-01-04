@@ -62,6 +62,9 @@ def NameParsing(sqlQueryHandler) -> Callable:
         else:
             SqlQueryHandler.QueueQuery(AddRole, Nickname.strip("*"))
             SqlQueryHandler.QueueQuery(AddRoleLink, PlayerAccount, Nickname.strip("*"))
+            SqlQueryHandler.QueueQuery(
+                AddCurrentRole, PlayerAccount, Nickname.strip("*")
+            )
         return PlayerAccount
 
     return ExtractNames

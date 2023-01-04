@@ -171,9 +171,9 @@ def Index() -> object:
                     [
                         "Most Popular Role",
                         "<a href=/role?search="
-                        + Role[0].replace(" ", "+")
+                        + str(Role[0]).replace(" ", "+")
                         + ">"
-                        + Role[0]
+                        + str(Role[0])
                         + "</a>",
                         Role[1],
                     ],
@@ -306,9 +306,9 @@ def SearchPlayer() -> object:
                     [
                         "Current Role",
                         "<a href=/role?search="
-                        + Role.replace(" ", "+")
+                        + str(Role).replace(" ", "+")
                         + ">"
-                        + Role
+                        + str(Role)
                         + "</a>",
                     ],
                     ["Current Nickname", Nickname],

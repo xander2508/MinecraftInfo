@@ -433,8 +433,8 @@ def AddCurrentRole(username: str, role: str, cursor: object) -> None:
         cursor.execute(
             "UPDATE Users SET CurrentRole = (?) WHERE Name = (?)",
             (
-                username,
                 role,
+                username,
             ),
         )
     except sqlite3.Error as error:

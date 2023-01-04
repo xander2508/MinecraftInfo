@@ -87,10 +87,10 @@ def GenerateMap(Map: dict, Claims: dict, Names: bool, Capital: str = "None") -> 
     OverlayMap64 = base64.b64encode(cv2.imencode(".png", ImageArray)[1]).decode()
     NewMap = (
         '<div style="position: relative; width: 750px; height: 750px; ">'
-        + "<img width='100%' height='100%' style='position: absolute; top: 0; left: 250px; z-index: 1;' src='data:image/png;base64, "
+        + "<img width='100%' height='100%' style='position: absolute; top: 0; left: 10px; z-index: 1;' src='data:image/png;base64, "
         + BaseMap64
         + "' />"
-        + "<img width='100%' height='100%' style='position: absolute; top: 0; left: 250px; z-index: 2;' src='data:image/png;base64, "
+        + "<img width='100%' height='100%' style='position: absolute; top: 0; left: 10px; z-index: 2;' src='data:image/png;base64, "
         + OverlayMap64
         + "' />"
         + "</div>"
