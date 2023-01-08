@@ -45,6 +45,12 @@ def DataCollection() -> None:
                 sys._getframe().f_code.co_name,
             )
             counter = DelayUpdateClaimInfo(counter)
+        except Exception as e:
+            LogError(e, __name__, sys._getframe().f_code.co_name)
+        except KeyboardInterrupt as e:
+            LogError("KeyboardInterrupt", __name__, sys._getframe().f_code.co_name)
+            break
+        try:
             time.sleep(20)
             BackupDatabase()
             time.sleep(10)

@@ -569,7 +569,7 @@ def GetTopItem() -> list:
         sqliteConnection = sqlite3.connect(DATABASE_BACKUP_LOCATION, timeout=5)
         with closing(sqliteConnection.cursor()) as cursor:
             cursor.execute(
-                "SELECT ItemUsed,COUNT(ItemUsed) FROM Deaths GROUP BY ItemUsed ORDER BY COUNT(ItemUsed) DESC LIMIT 1"
+                "SELECT ItemUsed,COUNT(ItemUsed) FROM Deaths WHERE NOT ItemUsed = 'None' GROUP BY ItemUsed ORDER BY COUNT(ItemUsed) DESC LIMIT 1"
             )
             rows = cursor.fetchall()
             Item = [rows[0][0], rows[0][1]]
