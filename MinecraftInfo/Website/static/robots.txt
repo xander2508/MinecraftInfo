@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /index.html
+Allow: /player
+Allow: /weapon
+Allow: /achievement
+Allow: /role
+Allow: /claim
+Allow: /nation
+Allow: /info
+Disallow: /

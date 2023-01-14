@@ -18,7 +18,7 @@ def LoadJsonFile(path: str) -> json:
 
 def LoadWebJsonFile(urlPath: str) -> json:
     try:
-        response = requests.get(urlPath)
+        response = requests.get(urlPath, verify=False, timeout=10)
         DataSource = json.loads(response.text)
     except Exception as error:
         LogError(error, __name__, sys._getframe().f_code.co_name)

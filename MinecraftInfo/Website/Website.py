@@ -91,7 +91,16 @@ def favicon():
     )
 
 
+@app.route("/robots.txt")
+def Robots() -> object:
+    return send_from_directory(
+        os.path.join(app.root_path, "static"),
+        "robots.txt",
+    )
+
+
 @app.route("/")
+@app.route("/index.html")
 def Index() -> object:
     """Display the index webpage containing the top statistics.
 

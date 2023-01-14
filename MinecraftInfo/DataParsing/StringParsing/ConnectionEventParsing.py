@@ -91,25 +91,27 @@ def LogConnectionMessageEvent(
 
 def UpdatePlayersOnlineFromMap(sqlQueryHandler) -> None:
     UsernameJson = LoadWebJsonFile(GetUsernameUrl())
-    for player in UsernameJson["players"]:
-        sqlQueryHandler.QueueQuery(AddUser, player["account"])
-        sqlQueryHandler.QueueQuery(AddNickname, player["account"], player["name"])
-        sqlQueryHandler.QueueQuery(
-            UpdateLoginTime, player["account"], datetime.now(timezone.utc)
-        )
-        sqlQueryHandler.QueueQuery(
-            UpdateUserLastSeen, player["account"], datetime.now(timezone.utc)
-        )
+    if UsernameJson != [{}]:
+        for player in UsernameJson["players"]:
+            sqlQueryHandler.QueueQuery(AddUser, player["account"])
+            sqlQueryHandler.QueueQuery(AddNickname, player["account"], player["name"])
+            sqlQueryHandler.QueueQuery(
+                UpdateLoginTime, player["account"], datetime.now(timezone.utc)
+            )
+            sqlQueryHandler.QueueQuery(
+                UpdateUserLastSeen, player["account"], datetime.now(timezone.utc)
+            )
 
-    OnlinePlayers = GetOnlinePlayers()
-    UsernameJson = LoadWebJsonFile(GetUsernameUrl())
-    OfflinePlayers = []
-    for player in UsernameJson["players"]:
-        if player["account"] not in OnlinePlayers:
-            try:
-                OfflinePlayers.append(player["account"])
-            except:
-                pass
+        OnlinePlayers = GetOnlinePlayers()
+        UsernameJson = LoadWebJsonFile(GetUsernameUrl())
+        if UsernameJson != [{}]:
+            OfflinePlayers = []
+            for player in UsernameJson["players"]:
+                if player["account"] not in OnlinePlayers:
+                    try:
+                        OfflinePlayers.append(player["account"])
+                    except:
+                        pass
 
-    for i in OfflinePlayers:
-        sqlQueryHandler.QueueQuery(UpdateUserTotalPlayTime, i)
+            for i in OfflinePlayers:
+                sqlQueryHandler.QueueQuery(UpdateUserTotalPlayTime, i)

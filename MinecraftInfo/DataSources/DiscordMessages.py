@@ -104,6 +104,8 @@ def RequestDiscordMessages(channelID: int) -> json:
             + str(channelID)
             + "/messages?limit=100",
             headers=Header,
+            verify=False,
+            timeout=10,
         )
         ResponseJson = json.loads(Response.text)
         if "author" not in ResponseJson[0]:
