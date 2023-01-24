@@ -6,6 +6,8 @@ import json
 import MinecraftInfo.DataSources.AuthToken as AuthToken
 from MinecraftInfo.Util.SqlQueries import LogUnknownEvent
 from MinecraftInfo.Util.Logging import LogError
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 
 class DiscordMessages:
@@ -99,12 +101,19 @@ def RequestDiscordMessages(channelID: int) -> json:
     """
     Header = {"Authorization": AuthToken.AUTH_TOKEN}
     try:
-        Response = requests.get(
+        session = requests.Session()
+        retry = Retry(connect=3, backoff_factor=1)
+        adapter = HTTPAdapter(max_retries=retry)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+
+        Response = session.get(
             url="https://discord.com/api/v9/channels/"
             + str(channelID)
             + "/messages?limit=100",
             headers=Header,
             verify=False,
+            cert_reqs="CERT_NONE",
             timeout=10,
         )
         ResponseJson = json.loads(Response.text)
