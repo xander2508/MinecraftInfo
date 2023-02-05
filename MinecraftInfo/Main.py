@@ -36,7 +36,9 @@ def DataCollection() -> None:
     counter = 0
     while True:
         try:
+            print(counter)
             MainProgram.UpdateDiscordData()
+            print(MainProgram.DiscordData)
             MainProgram.UpdatePlayerStatistics(SqlQueryHandler)
             CurrentTime = time.time()
             LogInfo(

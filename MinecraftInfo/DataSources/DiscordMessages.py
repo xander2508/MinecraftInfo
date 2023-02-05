@@ -113,7 +113,6 @@ def RequestDiscordMessages(channelID: int) -> json:
             + "/messages?limit=100",
             headers=Header,
             verify=False,
-            cert_reqs="CERT_NONE",
             timeout=10,
         )
         ResponseJson = json.loads(Response.text)
